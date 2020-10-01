@@ -4,16 +4,14 @@ clear
 kmax = 1000; % Number of rays to include
 N = 100; % Number of data sets to generate
 
-% Generating phase phi as uniform r.v. between 0 and 2*pi
+% Phase phi is a uniform r.v. between 0 and 2*pi
 phidist = makedist('uniform',0,2*pi);
 
-
-% Generating gain a as lognormal r.v. 
+% Gain a is a lognormal r.v. 
 mu = 0; % randomly chosen mu
 sigma = 1; % randomly chosen sigma
 adist = makedist('Lognormal', mu, sigma);
 % adist = makedist('Rayleigh', sigma);
-
 
 % t is a possion arrival process with mean delay lambda
 lambda = 10; % randomly chosen lambda

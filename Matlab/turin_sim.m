@@ -4,27 +4,25 @@ clear
 kmax = 100000; % Number of rays to include
 N = 100; % Number of data sets to generate
 
-% Generating phase phi as uniform r.v. between 0 and 2*pi
+% Phase phi is a uniform r.v. between 0 and 2*pi
 phidist = makedist('uniform',0,2*pi);
 
-
-% Generating gain a as lognormal r.v. 
+% Gain a is a lognormal r.v. 
 mu = 0; % randomly chosen mu
 sigma = 1; % randomly chosen sigma
 adist = makedist('Lognormal', mu, sigma);
 % adist = makedist('Rayleigh', sigma);
 
-
-% t is a possion arrival process with mean delay lambda
-lambda = 3; % randomly chosen lambda
-tdist = makedist('poisson',lambda);
+% Time delay tau is a possion arrival process with mean delay lambda
+lambda = 10; % randomly chosen lambda
+taudist = makedist('poisson',lambda);
 
 
 rho = zeros(100,N); % buffer for generated channel response data
 for n = 1:N
     phi = random(phidist,kmax,1); % Generate phase vector
     a = random(adist,kmax,1); % Generate amplitude vector
-    tau = random(tdist,kmax,1); % Generate delay vector
+    tau = random(taudist,kmax,1); % Generate delay vector
     for t = (1+min(tau)):(1+max(tau)) % For every time delay
         for k = 1:kmax % For every ray "k"
             if (t-1-tau(k) == 0) % if the time delay of k'th ray == current time delay

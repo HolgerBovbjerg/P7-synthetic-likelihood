@@ -1,53 +1,83 @@
 %% clear
 clear 
-%%
-kmax = 100000; % Number of rays to include
-N = 100; % Number of data sets to generate
 
-% Phase phi is a uniform r.v. between 0 and 2*pi
-phidist = makedist('uniform',0,2*pi);
+%% 
 
-% Gain a is a lognormal r.v. 
-mu = 0; % randomly chosen mu
-sigma = 1; % randomly chosen sigma
-adist = makedist('Lognormal', mu, sigma);
-% adist = makedist('Rayleigh', sigma);
+%% Choices made on model
+N = 625; % Number of data sets to generate
+B = 4e9; % Bandwidth of signal
+Ns = 801; % Number of sample points
+deltaf = B/(Ns-1); % Frequency seperation
+tmax = 1/deltaf; 
+T = 7.8e-9; % Reverberation time
+G0 = db2pow(-83.9); % Reverberation gain
 
 % Time delay tau is a possion arrival process with mean delay lambda
-lambda = 10; % randomly chosen lambda
-taudist = makedist('poisson',lambda);
+lambda = 100; % randomly chosen arrival rate lambda
+ldist = makedist('poisson',lambda);
 
 
-rho = zeros(100,N); % buffer for generated channel response data
+%% Simulate model
+Hk = zeros(Ns,N); % buffer for generated channel response data
+sigma_N = sqrt(28e-9); % Noise variance
+
 for n = 1:N
-    phi = random(phidist,kmax,1); % Generate phase vector
-    a = random(adist,kmax,1); % Generate amplitude vector
-    tau = random(taudist,kmax,1); % Generate delay vector
-    for t = (1+min(tau)):(1+max(tau)) % For every time delay
-        for k = 1:kmax % For every ray "k"
-            if (t-1-tau(k) == 0) % if the time delay of k'th ray == current time delay
-                rho(t,n) = rho(t,n) + a(k) * exp(1j*phi(k)); 
-            end
+    % Ns = random(kdist,1,1)
+    lmax = random(ldist,1,1); % Number of multipath components
+    tau = rand(lmax,1)*tmax; % time-delays
+    tau = sort(tau);
+    for k = 1:Ns % For every frequency index
+        for l = 1:length(lmax) % For every multipath component
+            sigma_alpha = sqrt(G0*exp(-(tau(l)/T) ) / lambda); % Calculate variance
+            alphadist = makedist('rayleigh', sigma_alpha);
+            alpha_real = random(alphadist,1,1);
+            alpha_imag = random(alphadist,1,1);
+            alpha = 1/sqrt(2)*(alpha_real+1j*alpha_imag);
+            Hk(k,n) = Hk(k,n) + alpha*exp(-1j*2*pi*deltaf*k*tau(l));
         end
     end
 end
 
-
-%% Compute ensemble mean of amplitude at delay t over N realisations
-rhomean = zeros(100,1); % buffer for ensemble mean of channel response
-for t=1:length(rhomean) %for every time delay 
-    for n = 1:N % for every experiment
-        rhomean(t) = rhomean(t) + rho(t,n); % sum channel response
-    end
-    rhomean(t) = rhomean(t)/N; % Divide by number of experiments
+%%
+Hkmean = zeros(Ns,1);
+for i = 1:Ns
+    Hkmean(i) = mean(Hk(i,:));
 end
-        
+
+% P_h_theoretical = mean(abs(ifft(Hk)).^2,2);
+%%
+P_h_simulated = abs(ifft(Hkmean)).^2;
+
+t = (0:Ns-1)./(deltaf*Ns);
+
+P_h_theoretical = G0*exp(-(t/T));
+
+tiledlayout(2,1)
+nexttile
+plot(t*1e9,P_h_theoretical)
+xlim([0 200])
+xlabel("Time [ns]")
+% ylabel("Power [dB]")
+nexttile
+plot(t*1e9,pow2db(P_h_simulated))
+xlim([0 200])
+xlabel("Time [ns]")
+ylabel("Power [dB]")
+%% Compute ensemble mean of amplitude at delay t over N realisations
+% rhomean = zeros(100,1); % buffer for ensemble mean of channel response
+% for t=1:length(rhomean) %for every time delay 
+%     for n = 1:N % for every experiment
+%         rhomean(t) = rhomean(t) + rho(t,n); % sum channel response
+%     end
+%     rhomean(t) = rhomean(t)/N; % Divide by number of experiments
+% end
+%         
 %% Plotting data
 
-trange = (0:99); % range of time delays  
-
-plot(trange,abs(rhomean))
-title("Simulated response of radio channel using Turin model")
-xlabel("Time delay (arbitrary)")
-ylabel("Mean amplitude over " +  N + " samples with " + kmax + " rays")
-% xlim([lambda-lambda*3/4 lambda+lambda*3/4])
+% trange = (0:99); % range of time delays  
+% 
+% plot(trange,abs(rhomean))
+% title("Simulated response of radio channel using Turin model")
+% xlabel("Time delay (arbitrary)")
+% ylabel("Mean amplitude over " +  N + " samples with " + kmax + " rays")
+% % xlim([lambda-lambda*3/4 lambda+lambda*3/4])

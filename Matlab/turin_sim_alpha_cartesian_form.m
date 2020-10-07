@@ -1,8 +1,6 @@
 %% clear
 clear 
 
-%% 
-
 %% Initial choices made on model. 
 % We have chosen some values based on "Estimator for Stochastic Channel Model without
 % Multipath Extraction using Temporal Moments" by Ayush Bharti et al. 
@@ -14,9 +12,10 @@ deltaf = B/(Ns-1); % Frequency seperation: 5 MHz
 tmax = 1/deltaf; % Maximum delay, found from the bandwidth via frequency seperation
 T = 7.8e-9; % Reverberation time: 7.8 ns
 G0 = db2pow(-83.9); % Reverberation gain converted from dB to power
+sigma_N = sqrt(28e-9); % Noise variance
 
 % Time delay tau is a possion arrival process with mean delay lambda
-lambda = 100; % randomly chosen arrival rate lambda
+lambda = 10; % randomly chosen arrival rate lambda
 ldist = makedist('poisson',lambda); 
 
 
@@ -25,36 +24,30 @@ ldist = makedist('poisson',lambda);
 % Turin model. 
 
 Hk = zeros(Ns,N); % buffer for generated channel response data
-sigma_N = sqrt(28e-9); % Noise variance
 
 % We run the simulation N times, creating new data sets for each
 % realization. 
 for n = 1:N
-    % Ns = random(kdist,1,1) 
-    lmax = random(ldist,1,1);   % Number of multipath components created from the Poisson distribution.
-    tau = rand(lmax,1)*tmax;    % time-delays drawn uniformly between 0 and the maximum delay.  
-    tau = sort(tau);            % The time delays are sorted, for easier plotting later. 
-    alpha = zeros(lmax,1);      % Buffer for generated alpha values.
+    lmax = random(ldist,1,1);   % Number of multipath components, created from the Poisson distribution.
+    tau = rand(lmax,1)*tmax;    % time-delays, drawn uniformly between 0 and the maximum delay.  
    
     % For every multipath component a complex gain is generated, based on a
     % sigma generated from a corresponding delay time value. 
     % The complex number is generated in cartesian form by drawing the real
-    % and the imaginary part seperately from a Rayleigh distribution. 
+    % and the imaginary part seperately from a normal distribution. 
     for i = 1:length(lmax) 
-            sigma_alpha = sqrt(G0*exp(-(tau(i)/T) ) / lambda); % Calculate variance
-%             alphadist = makedist('normal',0, sigma_alpha);
-            alphadist = makedist('rayleigh', 0, sigma_alpha);
+            sigma_alpha = sqrt(G0*exp(-(tau(i)/T) ) / lambda); % Calculate variance using eq 13 and Ph = Lambda*sigma^2 from Ayush paper.
+            alphadist = makedist('normal',0, sigma_alpha);
             alpha_real = random(alphadist,1,1);
             alpha_imag = random(alphadist,1,1);
-            alpha(i) = 1/sqrt(2)*(alpha_real+1j*alpha_imag);           
-    end
-    
-    % For every frequency index, k, the transfer function is calculated as
-    % a sum with contributions from each multipath component. 
-    for k = 1:Ns 
-        for l = 1:length(lmax) % For every multipath component
-            Hk(k,n) = Hk(k,n) + alpha(l)*exp(-1j*2*pi*deltaf*k*tau(l));
-        end
+            % The complex valued alpha is created by combining the real and
+            % imaginary parts. 
+            alpha = 1/sqrt(2)*(alpha_real+1j*alpha_imag);  
+            % For every frequency index, k, the contribution from multipath
+            % component, i, is added to the transfer function. 
+            for k = 1:Ns 
+                Hk(k,n) = Hk(k,n) + alpha*exp(-1j*2*pi*deltaf*k*tau(i));
+            end
     end
 end
 
@@ -67,26 +60,30 @@ end
 
 
 %% Simulating the power spectrum, P_h, from the transfer function
-% We use the formulas from the paper before. 
+% Generate timestamps, in seconds, for time axis in plot
+t = (0:Ns-1)./(deltaf*Ns);
 
+% We use the formulas from the paper before. 
 P_h_simulated = abs(ifft(Hkmean)).^2;
 P_h_theoretical = G0*exp(-(t/T));
 
-
-% Generate times for time axis in plot
-t = (0:Ns-1)./(deltaf*Ns);
-
-
+% We use P_Y = E_s * P_h + noise
+P_y_simulated = B * P_h_simulated + sigma_N^2/Ns;
+P_y_theoretical = P_h_theoretical + sigma_N^2/Ns;
 
 % Generation of plots showing the power spectrum. 
 tiledlayout(2,1)
 nexttile
-plot(t*1e9,P_h_theoretical)
+plot(t*1e9,pow2db(P_y_theoretical))
 xlim([0 200])
+ylim([-110 -50])
+title("P_y theoretical")
 xlabel("Time [ns]")
-% ylabel("Power [dB]")
+ylabel("Power [dB]")
 nexttile
-plot(t*1e9,pow2db(P_h_simulated))
+plot(t*1e9,pow2db(P_y_simulated))
+title("P_y simulated")
 xlim([0 200])
+ylim([-110 -50])
 xlabel("Time [ns]")
 ylabel("Power [dB]")

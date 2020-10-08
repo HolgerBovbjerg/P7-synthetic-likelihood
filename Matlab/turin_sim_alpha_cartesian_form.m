@@ -12,7 +12,7 @@ deltaf = B/(Ns-1); % Frequency seperation: 5 MHz
 tmax = 1/deltaf; % Maximum delay, found from the bandwidth via frequency seperation
 T = 7.8e-9; % Reverberation time: 7.8 ns
 G0 = db2pow(-83.9); % Reverberation gain converted from dB to power
-sigma_N = sqrt(28e-9); % Noise variance
+sigma_N = sqrt(0.28e-9); % Noise variance
 
 % Time delay tau is a possion arrival process with mean delay lambda
 lambda = 10e9; % randomly chosen arrival rate lambda 10e9 arrivals per second
@@ -85,7 +85,7 @@ hold on
 plot(t*1e9,pow2db(P_y_simulated), 'DisplayName', "P_y simulated")
 title("P_y simulated")
 xlim([0 200])
-ylim([-110 -80])
+ylim([-130 -80])
 xlabel("Time [ns]")
 ylabel("Power [dB]")
 lgd = legend;

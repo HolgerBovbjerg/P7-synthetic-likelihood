@@ -1,4 +1,4 @@
-function P_y_simulated = turin_sim_alpha_cartesian_form_claus(lambda,G0,T,N)
+function [P_y_simulated P_h alpha tau] = turin_sim_alpha_cartesian_form_claus(lambda,G0,T,N)
 
 %% clear
 %%clear 
@@ -31,16 +31,20 @@ ldist = makedist('poisson',tmax*lambda); % distribution for number
                                              % maximum delay
 % We run the simulation N times, creating new data sets for each
 % realization. 
+ lmax = random(ldist,1,1);   % Number of multipath components, created from the Poisson distribution.
+
+ alpha = zeros(N,lmax);
 for n = 1:N
-    lmax = random(ldist,1,1);   % Number of multipath components, created from the Poisson distribution.
-    tau = rand(lmax,1)*tmax;    % time-delays, drawn uniformly between 0 and the maximum delay.  
-    tau = sort(tau);
+   
+    tau = rand(lmax,N)*tmax;    % time-delays, drawn uniformly between 0 and the maximum delay.  
+    %tau = sort(tau);
     % For every multipath component a complex gain is generated, based on a
     % sigma generated from a corresponding delay time value. 
     % The complex number is generated in cartesian form by drawing the real
     % and the imaginary part seperately from a normal distribution. 
+
     for i = 1:lmax 
-            sigma_alpha = sqrt(G0*exp(-(tau(i)/T) ) / lambda);% Calculate variance using eq 13 and Ph = Lambda*sigma^2 from Ayush paper.
+            sigma_alpha = sqrt(G0*exp(-(tau(i,n)/T) ) / lambda);% Calculate variance using eq 13 and Ph = Lambda*sigma^2 from Ayush paper.
             
             %% 1
             alphadist = makedist('normal',0,sigma_alpha);
@@ -48,11 +52,11 @@ for n = 1:N
             alpha_imag = random(alphadist,1,1);
             % The complex valued alpha is created by combining the real and
             % imaginary parts. 
-            alpha = 1/sqrt(2)*(alpha_real+1j*alpha_imag);  
+            alpha(n,i) = 1/sqrt(2)*(alpha_real+1j*alpha_imag);  
             % For every frequency index, k, the contribution from multipath
             % component, i, is added to the transfer function. 
             for k = 1:Ns 
-                Hk(k,n) = Hk(k,n) + alpha*exp(-1j*2*pi*deltaf*k*tau(i));
+                Hk(k,n) = Hk(k,n) + alpha(n,i)*exp(-1j*2*pi*deltaf*k*tau(i,n));
             end
             
     end
@@ -81,14 +85,16 @@ P_h_theoretical = G0*exp(-(t/T));
 P_y_simulated = B*P_h_simulated + sigma_N^2/Ns;
 P_y_theoretical = P_h_theoretical + sigma_N^2/Ns;
 
+P_y_noMean = B*P_h + sigma_N^2/Ns;
 % Generation of plots showing the power spectrum. 
-plot(t*1e9,pow2db(P_y_theoretical), 'DisplayName', "P_y theoretical")
-hold on
-plot(t*1e9,pow2db(P_y_simulated), 'DisplayName', "P_y simulated")
-title("P_y simulated")
-xlim([0 200])
-ylim([-110 -80])
-xlabel("Time [ns]")
-ylabel("Power [dB]")
-lgd = legend;
+figure(1)
+ plot(t*1e9,pow2db(P_y_theoretical), 'DisplayName', "P_y theoretical")
+ hold on
+ plot(t*1e9,pow2db(P_y_simulated), 'DisplayName', "P_y simulated")
+ title("P_y simulated")
+ xlim([0 200])
+ ylim([-110 -80])
+ xlabel("Time [ns]")
+ ylabel("Power [dB]")
+ lgd = legend;
 

@@ -17,7 +17,7 @@ G0 = db2pow(-83.9); % Reverberation gain converted from dB to power
 
 % Time delay tau is a possion arrival process with mean delay lambda
 lambda = 10e8; % randomly chosen arrival rate lambda 10e9 arrivals per second
-n = 15; % Number of iterations 
+n = 60; % Number of iterations 
 
 sigma_noise = sqrt(28e-9); % noise variance
 order = 3;
@@ -292,4 +292,3 @@ title("Mean (m3)")
 nexttile
 plot(lambda,var3,"o")
 title("Var (m3)")
-

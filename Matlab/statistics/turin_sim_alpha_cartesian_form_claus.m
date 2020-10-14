@@ -1,100 +1,294 @@
-function [P_y_simulated P_h alpha tau] = turin_sim_alpha_cartesian_form_claus(lambda,G0,T,N,sigma_N)
+% Matlab script for finding summary statistics from samples from the Turin
+% model. In eact section one parameter is varied while the others are held
+% fixed. 50 different values of each parameter is simulated
 
-%% clear
-%%clear 
+% The temporal moments are found using equation 3 in the paper "Parameter
+% estimation for stochastic channel models using temporal moments"
 
-%% Initial choices made on model. 
-% We have chosen some values based on "Estimator for Stochastic Channel Model without
-% Multipath Extraction using Temporal Moments" by Ayush Bharti et al. 
+% When varying a value, n iterations are being done. The mean and variance
+% of these iterations are then found as our summary statistics.
 
-%N = 625; % Number of data sets to generate and average over
-B = 4e9; % Bandwidth of signal: 4 GHz
-Ns = 801; % Number of sample points in each data set
-deltaf = B/(Ns-1); % Frequency seperation: 5 MHz
-tmax = 1/deltaf; % Maximum delay, found from the bandwidth via frequency seperation
-%T = 7.8e-9; % Reverberation time: 7.8 ns
-%G0 = db2pow(-83.9); % Reverberation gain converted from dB to power
-%sigma_N = sqrt(28e-9); % Noise variance
+%% Varying T
+clear all
+
+tic % Starting a timer to see how long it takes to simulate
+T = linspace(7.8e-11,5e-8,50); % Reverberation time, 
+G0 = db2pow(-83.9); % Reverberation gain converted from dB to power
 
 % Time delay tau is a possion arrival process with mean delay lambda
-%lambda = 10e9; % randomly chosen arrival rate lambda 10e9 arrivals per second
+lambda = 10e8; % randomly chosen arrival rate lambda 10e9 arrivals per second
+n = 60; % Number of iterations 
 
-%% Simulate model
-% We then simulate the transfer function, H_k, of the channel, using the
-% Turin model. 
-
-Hk = zeros(Ns,N); % buffer for generated channel response data
-P_h = zeros(Ns,N); % Buffer for Power of impulse response
-ldist = makedist('poisson',tmax*lambda); % distribution for number 
-                                             % of multipaths to include is 
-                                             % a function of lambda and
-                                             % maximum delay
-% We run the simulation N times, creating new data sets for each
-% realization. 
- lmax = random(ldist,1,1);   % Number of multipath components, created from the Poisson distribution.
-
- alpha = zeros(N,lmax);
-for n = 1:N
-   
-    tau = rand(lmax,N)*tmax;    % time-delays, drawn uniformly between 0 and the maximum delay.  
-    %tau = sort(tau);
-    % For every multipath component a complex gain is generated, based on a
-    % sigma generated from a corresponding delay time value. 
-    % The complex number is generated in cartesian form by drawing the real
-    % and the imaginary part seperately from a normal distribution. 
-
-    for i = 1:lmax 
-            sigma_alpha = sqrt(G0*exp(-(tau(i,n)/T) ) / lambda);% Calculate variance using eq 13 and Ph = Lambda*sigma^2 from Ayush paper.
-            
-            %% 1
-            alphadist = makedist('normal',0,sigma_alpha);
-            alpha_real = random(alphadist,1,1);
-            alpha_imag = random(alphadist,1,1);
-            % The complex valued alpha is created by combining the real and
-            % imaginary parts. 
-            alpha(n,i) = 1/sqrt(2)*(alpha_real+1j*alpha_imag);  
-            % For every frequency index, k, the contribution from multipath
-            % component, i, is added to the transfer function. 
-            for k = 1:Ns 
-                Hk(k,n) = Hk(k,n) + alpha(n,i)*exp(-1j*2*pi*deltaf*k*tau(i,n));
-            end
-            
+sigma_noise = sqrt(28e-9); % noise variance
+order = 3;
+for k = 1:length(T)
+    [P Pv alpha tau] = turin_sim_alpha_cartesian_form_claus(lambda,G0,T(k),n,sigma_noise);
+    for l = 1:n
+            %   0th order moment
+        moment0bef(l) = abs(alpha(l,:)).^2*tau(:,l).^0; % Vector containing the moment of each iteration
+        moment0(k) = mean(moment0bef);                  % Finding the mean of the moment of the n iterations
+        var0(k) = var(moment0bef);                      % Finding the variance of the moment of the n iterations
+            %   1st order moment
+        moment1bef(l) = abs(alpha(l,:)).^2*tau(:,l).^1;
+        moment1(k) = mean(moment1bef);
+        var1(k) = var(moment1bef);
+            %   2nd order moment
+        moment2bef(l) = abs(alpha(l,:)).^2*tau(:,l).^2;
+        moment2(k) = mean(moment2bef);
+        var2(k) = var(moment2bef);
+            %   3rd order moment
+        moment3bef(l) = abs(alpha(l,:)).^2*tau(:,l).^3;
+        moment3(k) = mean(moment3bef);
+        var3(k) = var(moment3bef);
     end
-    
-    P_h(:,n) = abs(ifft(Hk(:,n))).^2;
-end
-%% Averaging over the N realizations
+    k
+end    
+toc
+figure(2)
+plotT = tiledlayout(4,2)
+title(plotT,"Summary statistics varying T")
+nexttile
+plot(T,moment0,"o")
+title("Mean (m0)")
 
-P_h_mean = mean(P_h,2);
+nexttile
+plot(T,var0,"o")
+title("Var (m0)")
+
+nexttile
+plot(T,moment1,"o");
+title("Mean (m1)")
+
+nexttile
+plot(T,var1,"o")
+title("Var (m1)")
+
+nexttile
+plot(T,moment2,"o");
+title("Mean (m2)")
+
+nexttile
+plot(T,var2,"o")
+title("Var (m2)")
+
+nexttile
+plot(T,moment3,"o");
+title("Mean (m3)")
+
+nexttile
+plot(T,var3,"o")
+title("Var (m2)")
 
 
-% P_h_mean = zeros(Ns,1);
-% for i = 1:Ns
-%     P_h_mean(i) = mean(P_h(i,:));
-% end
 
-%% Simulating the power spectrum, P_h, from the transfer function
-% Generate timestamps, in seconds, for time axis in plot
-t = (0:Ns-1)./(deltaf*Ns);
+%% Varying G0
+clear all
 
-% We use the formulas from the paper before. 
-P_h_simulated = P_h_mean;
-P_h_theoretical = G0*exp(-(t/T));
+tic
+T = 7.8e-9; % Reverberation time: 7.8 ns
+G0 = linspace(db2pow(-110), db2pow(-60), 50); % Reverberation gain converted from dB to power
 
-% We use P_Y = E_s * P_h + noise
-P_y_simulated = B*P_h_simulated + sigma_N^2/Ns;
-P_y_theoretical = P_h_theoretical + sigma_N^2/Ns;
+% Time delay tau is a possion arrival process with mean delay lambda
+lambda = 10e8; % randomly chosen arrival rate lambda 10e9 arrivals per second
+n = 15;
+sigma_noise = sqrt(28e-9);
+order = 3;
+for k = 1:length(G0)
+    [P Pv alpha tau] = turin_sim_alpha_cartesian_form_claus(lambda,G0(k),T,n,sigma_noise);
+    for l = 1:n
+        moment0bef(l) = abs(alpha(l,:)).^2*tau(:,l).^0;
+        moment0(k) = mean(moment0bef);
+        var0(k) = var(moment0bef);
+        
+        moment1bef(l) = abs(alpha(l,:)).^2*tau(:,l).^1;
+        moment1(k) = mean(moment1bef);
+        var1(k) = var(moment1bef);
+        
+        moment2bef(l) = abs(alpha(l,:)).^2*tau(:,l).^2;
+        moment2(k) = mean(moment2bef);
+        var2(k) = var(moment2bef);
+        
+        moment3bef(l) = abs(alpha(l,:)).^2*tau(:,l).^3;
+        moment3(k) = mean(moment3bef);
+        var3(k) = var(moment3bef);
+    end
+    k
+end    
+toc
+figure(3)
+plotT = tiledlayout(4,2)
+title(plotT,"Summary statistics varying G0")
 
-P_y_noMean = B*P_h + sigma_N^2/Ns;
-% Generation of plots showing the power spectrum. 
-figure(1)
- plot(t*1e9,pow2db(P_y_theoretical), 'DisplayName', "P_y theoretical")
- hold on
- plot(t*1e9,pow2db(P_y_simulated), 'DisplayName', "P_y simulated")
- title("P_y simulated")
- xlim([0 200])
- ylim([-110 -80])
- xlabel("Time [ns]")
- ylabel("Power [dB]")
- lgd = legend;
+nexttile
+plot(G0,moment0,"o")
+title("Mean (m0)")
 
+nexttile
+plot(G0,var0,"o")
+title("Var (m0)")
+
+nexttile
+plot(G0,moment1,"o");
+title("Mean (m1)")
+
+nexttile
+plot(G0,var1,"o")
+title("Var (m1)")
+
+nexttile
+plot(G0,moment2,"o");
+title("Mean (m2)")
+
+nexttile
+plot(G0,var2,"o")
+title("Var (m2)")
+
+nexttile
+plot(G0,moment3,"o");
+title("Mean (m3)")
+
+nexttile
+plot(G0,var3,"o")
+title("Var (m3)")
+
+
+%% Varying noise variance
+clear all
+
+tic
+T = 7.8e-9; % Reverberation time: 7.8 ns
+G0 = db2pow(-83.9); % Reverberation gain converted from dB to power
+
+% Time delay tau is a possion arrival process with mean delay lambda
+lambda = 10e8; % randomly chosen arrival rate lambda 10e9 arrivals per second
+n = 15;
+sigma_noise = linspace(sqrt(28e-11),sqrt(28e-7),50);
+order = 3;
+
+for k = 1:length(sigma_noise)
+    [P Pv alpha tau] = turin_sim_alpha_cartesian_form_claus(lambda,G0,T,n,sigma_noise(k));
+    for l = 1:n
+        moment0bef(l) = abs(alpha(l,:)).^2*tau(:,l).^0;
+        moment0(k) = mean(moment0bef);
+        var0(k) = var(moment0bef);
+        
+        moment1bef(l) = abs(alpha(l,:)).^2*tau(:,l).^1;
+        moment1(k) = mean(moment1bef);
+        var1(k) = var(moment1bef);
+        
+        moment2bef(l) = abs(alpha(l,:)).^2*tau(:,l).^2;
+        moment2(k) = mean(moment2bef);
+        var2(k) = var(moment2bef);
+        
+        moment3bef(l) = abs(alpha(l,:)).^2*tau(:,l).^3;
+        moment3(k) = mean(moment3bef);
+        var3(k) = var(moment3bef);
+    end
+    k
+end    
+toc
+figure(4)
+plotT = tiledlayout(4,2)
+title(plotT,"Summary statistics varying noise variance")
+
+nexttile
+plot(sigma_noise,moment0,"o")
+title("Mean (m0)")
+
+nexttile
+plot(sigma_noise,var0,"o")
+title("Var (m0)")
+
+nexttile
+plot(sigma_noise,moment1,"o");
+title("Mean (m1)")
+
+nexttile
+plot(sigma_noise,var1,"o")
+title("Var (m1)")
+
+nexttile
+plot(sigma_noise,moment2,"o");
+title("Mean (m2)")
+
+nexttile
+plot(sigma_noise,var2,"o")
+title("Var (m2)")
+
+nexttile
+plot(sigma_noise,moment3,"o");
+title("Mean (m3)")
+
+nexttile
+plot(sigma_noise,var3,"o")
+title("Var (m3)")
+
+%% Varying lambda
+clear all
+
+tic
+T = 7.8e-9; % Reverberation time: 7.8 ns
+G0 = db2pow(-83.9); % Reverberation gain converted from dB to power
+
+% Time delay tau is a possion arrival process with mean delay lambda
+lambda = linspace(10e6,20e9,50); % randomly chosen arrival rate lambda 10e9 arrivals per second
+n = 10;
+sigma_noise = sqrt(28e-9);
+order = 3;
+for k = 1:length(lambda)
+    [P Pv alpha tau] = turin_sim_alpha_cartesian_form_claus(lambda(k),G0,T,n,sigma_noise);
+    for l = 1:n
+        moment0bef(l) = abs(alpha(l,:)).^2*tau(:,l).^0;
+        moment0(k) = mean(moment0bef);
+        var0(k) = var(moment0bef);
+        
+        moment1bef(l) = abs(alpha(l,:)).^2*tau(:,l).^1;
+        moment1(k) = mean(moment1bef);
+        var1(k) = var(moment1bef);
+        
+        moment2bef(l) = abs(alpha(l,:)).^2*tau(:,l).^2;
+        moment2(k) = mean(moment2bef);
+        var2(k) = var(moment2bef);
+        
+        moment3bef(l) = abs(alpha(l,:)).^2*tau(:,l).^3;
+        moment3(k) = mean(moment3bef);
+        var3(k) = var(moment3bef);
+    end
+    k
+end    
+toc
+figure(5)
+plotT = tiledlayout(4,2)
+title(plotT,"Summary statistics varying lambda")
+
+nexttile
+plot(lambda,moment0,"o")
+title("Mean (m0)")
+
+nexttile
+plot(lambda,var0,"o")
+title("Var (m0)")
+
+nexttile
+plot(lambda,moment1,"o");
+title("Mean (m1)")
+
+nexttile
+plot(lambda,var1,"o")
+title("Var (m1)")
+
+nexttile
+plot(lambda,moment2,"o");
+title("Mean (m2)")
+
+nexttile
+plot(lambda,var2,"o")
+title("Var (m2)")
+
+nexttile
+plot(lambda,moment3,"o");
+title("Mean (m3)")
+
+nexttile
+plot(lambda,var3,"o")
+title("Var (m3)")

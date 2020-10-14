@@ -20,15 +20,10 @@ tmax = 1/deltaf; % Maximum delay, found from the bandwidth via frequency seperat
 % Turin model. 
 
 Hk = zeros(Ns,N); % buffer for generated channel response data
-P_h = zeros(Ns,N); % Buffer for Power of impulse response
-ldist = makedist('poisson',tmax*lambda); % distribution for number 
-                                             % of multipaths to include is 
-                                             % a function of lambda and
-                                             % maximum delay
 % We run the simulation N times, creating new data sets for each
 % realization. 
 for n = 1:N
-    lmax = random(ldist,1,1);   % Number of multipath components, created from the Poisson distribution.
+    lmax = poissrnd(tmax*lambda);   % Number of multipath components, created from the Poisson distribution.
     tau = rand(lmax,1)*tmax;    % time-delays, drawn uniformly between 0 and the maximum delay.  
     tau = sort(tau);
     % For every multipath component a complex gain is generated, based on a
@@ -45,20 +40,19 @@ for n = 1:N
             for k = 1:Ns 
                 Hk(k,n) = Hk(k,n) + alpha*exp(-1j*2*pi*deltaf*k*tau(i));
             end
-            %% Add noise to transfer function with complex normal dist
-            noise = sigma_N/(Ns)*(randn(Ns,1));
-            Hk(:,n) = Hk(:,n) + noise; 
     end
-    
-    P_h(:,n) = abs(ifft(Hk(:,n))).^2;
 end
+%% Generate noise vector
+noise = sigma_N^2 * (1/sqrt(2))* (randn(Ns,N) + 1j*randn(Ns,N));
+%% Add noise to transfer function with complex normal dist
+Hk = Hk + noise;
+%% Power delay profile
+P_h = abs(ifft(Hk,[],1)).^2;
 %% Averaging over the N realizations
 P_h_mean = mean(P_h,2); % acg. power delay profile
 
 %% Simulating the power spectrum, P_h, from the transfer function
-% Generate timestamps, in seconds, for time axis in plot
-t = (0:Ns-1)'./(deltaf*Ns); 
-
+t = (0:Ns-1)'./(deltaf*Ns); % Generate timestamps, in seconds
 % We use the formulas from the paper before. 
 P_h_simulated = P_h_mean;
 P_h_theoretical = G0*exp(-(t/T));

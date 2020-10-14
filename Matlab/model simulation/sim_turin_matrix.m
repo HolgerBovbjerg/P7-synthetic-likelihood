@@ -1,4 +1,4 @@
-function [P_y, t] = sim_turin(N, B, Ns, T, G0, lambda, sigma_N)
+function [P_y, t] = sim_turin_matrix(N, B, Ns, T, G0, lambda, sigma_N)
     deltaf = B/(Ns-1); % Frequency seperation: 5 MHz
     tmax = 1/deltaf; % Maximum delay, found from the bandwidth via frequency seperation
     t = (0:Ns-1)'./(deltaf*Ns); % Generate timestamps, in seconds
@@ -16,17 +16,14 @@ function [P_y, t] = sim_turin(N, B, Ns, T, G0, lambda, sigma_N)
         % sigma generated from a corresponding delay time value. 
         % The complex number is generated in cartesian form by drawing the real
         % and the imaginary part seperately from a normal distribution. 
-        for i = 1:lmax 
-                sigma_alpha = sqrt(G0*exp(-(tau(i)/T) ) / lambda);% Calculate variance using eq 13 and Ph = Lambda*sigma^2 from Ayush paper.
-                % The complex valued alpha is created by combining the real and
-                % imaginary parts. 
-                alpha = 1/sqrt(2)*sigma_alpha*(randn +  1j*randn);  
-                % For every frequency index, k, the contribution from multipath
-                % component, i, is added to the transfer function. 
-                for k = 1:Ns 
-                    Hk(k,n) = Hk(k,n) + alpha*exp(-1j*2*pi*deltaf*k*tau(i));
-                end
-        end
+        sigma_alpha = sqrt(G0*exp(-(tau*(1/T)) ) / lambda);% Calculate variance using eq 13 and Ph = Lambda*sigma^2 from Ayush paper.
+        % The complex valued alpha is created by combining the real and
+        % imaginary parts. 
+        alpha = sigma_alpha * 1/sqrt(2) .* (randn(lmax,1) +  1j*randn(lmax,1));  
+        % For every frequency index, k, the contribution from every multipath
+        % component is added to the transfer function. 
+        k = (1:Ns);
+        Hk(:,n) = (alpha.'*exp(-1j*2*pi*deltaf*k.*tau)).';
     end
     %% Generate noise vector
     noise = sigma_N^2 * (1/sqrt(2))* (randn(Ns,N) + 1j*randn(Ns,N));

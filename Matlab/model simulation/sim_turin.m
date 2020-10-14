@@ -11,7 +11,6 @@ function [P_y, t] = sim_turin(N, B, Ns, T, G0, lambda, sigma_N)
     for n = 1:N
         lmax = poissrnd(tmax*lambda);   % Number of multipath components, created from the Poisson distribution.
         tau = rand(lmax,1)*tmax;    % time-delays, drawn uniformly between 0 and the maximum delay.  
-        tau = sort(tau);
         % For every multipath component a complex gain is generated, based on a
         % sigma generated from a corresponding delay time value. 
         % The complex number is generated in cartesian form by drawing the real

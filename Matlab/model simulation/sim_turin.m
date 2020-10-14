@@ -32,11 +32,12 @@ function [P_y, t] = sim_turin(N, B, Ns, T, G0, lambda, sigma_N)
                 for k = 1:Ns 
                     Hk(k,n) = Hk(k,n) + alpha*exp(-1j*2*pi*deltaf*k*tau(i));
                 end
-                %% Add noise to transfer function with complex normal dist
-                noise = sigma_N^2/Ns*1/sqrt(2)*( randn(Ns,1) + 1j*randn(Ns,1) );
-                Hk(:,n) = Hk(:,n) + noise; 
         end
-
+        %% Generate noise vector
+        noise = sigma_N^2 * (1/sqrt(2))* (randn(Ns,1) + 1j*randn(Ns,1));
+        %% Add noise to transfer function with complex normal dist
+        Hk(:,n) = Hk(:,n) + noise;
+        % Power delay profile
         P_h(:,n) = abs(ifft(Hk(:,n))).^2;
     end
     %% Averaging over the N realizations

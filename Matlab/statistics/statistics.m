@@ -12,14 +12,14 @@
 clear all
 
 tic % Starting a timer to see how long it takes to simulate
-T = linspace(7.8e-11,5e-8,50); % Reverberation time, 
+T = linspace(7.8e-11,7.8e-9,50); % Reverberation time, 
 G0 = db2pow(-83.9); % Reverberation gain converted from dB to power
 
 % Time delay tau is a possion arrival process with mean delay lambda
 lambda = 10e8; % randomly chosen arrival rate lambda 10e9 arrivals per second
-n = 60; % Number of iterations 
+n = 300; % Number of iterations 
 
-sigma_noise = sqrt(28e-9); % noise variance
+sigma_noise = sqrt(0.28e-9); % noise variance
 order = 3;
 for k = 1:length(T)
     [P Pv alpha tau] = turin_sim_alpha_cartesian_form_claus(lambda,G0,T(k),n,sigma_noise);
@@ -90,8 +90,8 @@ G0 = linspace(db2pow(-110), db2pow(-60), 50); % Reverberation gain converted fro
 
 % Time delay tau is a possion arrival process with mean delay lambda
 lambda = 10e8; % randomly chosen arrival rate lambda 10e9 arrivals per second
-n = 15;
-sigma_noise = sqrt(28e-9);
+n = 300;
+sigma_noise = sqrt(0.28e-9);
 order = 3;
 for k = 1:length(G0)
     [P Pv alpha tau] = turin_sim_alpha_cartesian_form_claus(lambda,G0(k),T,n,sigma_noise);
@@ -161,8 +161,8 @@ G0 = db2pow(-83.9); % Reverberation gain converted from dB to power
 
 % Time delay tau is a possion arrival process with mean delay lambda
 lambda = 10e8; % randomly chosen arrival rate lambda 10e9 arrivals per second
-n = 15;
-sigma_noise = linspace(sqrt(28e-11),sqrt(28e-7),50);
+n = 30;
+sigma_noise = linspace(sqrt(0.28e-11),sqrt(0.28e-8),50);
 order = 3;
 
 for k = 1:length(sigma_noise)
@@ -232,8 +232,8 @@ G0 = db2pow(-83.9); % Reverberation gain converted from dB to power
 
 % Time delay tau is a possion arrival process with mean delay lambda
 lambda = linspace(10e6,20e9,50); % randomly chosen arrival rate lambda 10e9 arrivals per second
-n = 10;
-sigma_noise = sqrt(28e-9);
+n = 30;
+sigma_noise = sqrt(0.28e-9);
 order = 3;
 for k = 1:length(lambda)
     [P Pv alpha tau] = turin_sim_alpha_cartesian_form_claus(lambda(k),G0,T,n,sigma_noise);

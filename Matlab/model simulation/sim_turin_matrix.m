@@ -1,5 +1,5 @@
-function [P_y, t] = sim_turin(N, B, Ns, T, G0, lambda, sigma_N)
-    deltaf = B/(Ns-1); % Frequency seperation: 5 MHz
+function [P_y, t] = sim_turin_matrix(N, B, Ns, T, G0, lambda, sigma_N)
+    deltaf = B/(Ns-1); % Frequency seperation
     tmax = 1/deltaf; % Maximum delay, found from the bandwidth via frequency seperation
     t = (0:Ns-1)'./(deltaf*Ns); % Generate timestamps, in seconds
     %% Simulate model
@@ -16,27 +16,23 @@ function [P_y, t] = sim_turin(N, B, Ns, T, G0, lambda, sigma_N)
         % sigma generated from a corresponding delay time value. 
         % The complex number is generated in cartesian form by drawing the real
         % and the imaginary part seperately from a normal distribution. 
-        for i = 1:lmax 
-                sigma_alpha = sqrt(G0*exp(-(tau(i)/T) ) / lambda);% Calculate variance using eq 13 and Ph = Lambda*sigma^2 from Ayush paper.
-                % The complex valued alpha is created by combining the real and
-                % imaginary parts. 
-                alpha = 1/sqrt(2)*sigma_alpha*(randn +  1j*randn);  
-                % For every frequency index, k, the contribution from multipath
-                % component, i, is added to the transfer function. 
-                for k = 1:Ns 
-                    Hk(k,n) = Hk(k,n) + alpha*exp(-1j*2*pi*deltaf*k*tau(i));
-                end
-        end
+        sigma_alpha = sqrt(G0*exp(-(tau*(1/T)) ) / lambda);% Calculate variance using eq 13 and Ph = Lambda*sigma^2 from Ayush paper.
+        % The complex valued alpha is created by combining the real and
+        % imaginary parts. 
+        alpha = sigma_alpha * 1/sqrt(2) .* (randn(lmax,1) +  1j*randn(lmax,1));  
+        % For every frequency index, k, the contribution from every multipath
+        % component is added to the transfer function. 
+        k = (1:Ns);
+        Hk(:,n) = (exp(-1j*2*pi*deltaf*k.*tau).' * alpha);
     end
-    %% Generate noise vector
+    % Generate noise vector
     noise = sigma_N^2 * (1/sqrt(2))* (randn(Ns,N) + 1j*randn(Ns,N));
-    %% Add noise to transfer function with complex normal dist
+    % Add noise to transfer function with complex normal dist
     Hk = Hk + noise;
-    %% Power delay profile
+    % Power delay profile
     P_h = abs(ifft(Hk,[],1)).^2;
-    %% Averaging over the N realizations
+    % Averaging over the N realizations
     P_h_mean = mean(P_h,2); % acg. power delay profile
-    %% Simulating the power spectrum, P_h, from the transfer function
     % We use P_Y = E_s * P_h + noise (Noise is already included in simulation)
     P_y = B*P_h_mean; %+ sigma_N^2/Ns;
 end

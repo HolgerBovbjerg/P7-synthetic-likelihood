@@ -45,29 +45,44 @@ end
 
  
  figure(2)
- tiledlayout(4,1)
- nexttile
-plot(T,mean(temporal0,2),"o") 
+plotmean =  tiledlayout(4,1)
+title(plotmean,"Mean of the temporal moments while varying T") 
+nexttile
+plot(T,mean(temporal0,2),"o")
+title("Mean (m0)")
 
  nexttile
 plot(T,mean(temporal1,2),"o") 
+title("Mean (m1)")
 
  nexttile
 plot(T,mean(temporal2,2),"o") 
+title("Mean (m2)")
 
  nexttile
 plot(T,mean(temporal3,2),"o")
+title("Mean (m3)")
 
 figure(3)
-tiledlayout(4,1)
+plotvar = tiledlayout(4,1)
+title(plotvar,"Variance of the temporal moments while varying T")
+
 nexttile
 plot(T,var(temporal0'),"o")
+title("Var (m0)")
+
 nexttile
 plot(T,var(temporal1'),"o")
+title("Var (m1)")
+
 nexttile
 plot(T,var(temporal2'),"o")
+title("Var (m2)")
+
 nexttile
 plot(T,var(temporal3'),"o")
+title("Var (m3)")
+
 %% Varying T
 clear all
 

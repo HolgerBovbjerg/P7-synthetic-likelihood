@@ -1,4 +1,4 @@
-function [P_y_simulated P_h alpha tau] = turin_sim_alpha_cartesian_form_claus(lambda,G0,T,N,sigma_N)
+function [P_y_simulated P_h alpha tau, t] = turin_sim_alpha_cartesian_form_claus(lambda,G0,T,N,sigma_N)
 
 %% clear
 %%clear 

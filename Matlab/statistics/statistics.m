@@ -8,16 +8,54 @@
 % When varying a value, n iterations are being done. The mean and variance
 % of these iterations are then found as our summary statistics.
 
-%% Varying T
+
+%%
 clear all
 
-tic % Starting a timer to see how long it takes to simulate
-T = linspace(7.8e-11,7.8e-9,50); % Reverberation time, 
+%T = linspace(7.8e-11,7.8e-9,50); % Reverberation time, 
+a = 2e-9; b = 50e-9,Nl = 200;
+T = a + (b-a).*rand(Nl,1);
 G0 = db2pow(-83.9); % Reverberation gain converted from dB to power
 
 % Time delay tau is a possion arrival process with mean delay lambda
 lambda = 10e8; % randomly chosen arrival rate lambda 10e9 arrivals per second
-n = 300; % Number of iterations 
+n = 100; % Number of iterations 
+
+sigma_noise = sqrt(0.28e-9); % noise variance
+for k = 1:length(T)
+    [P Pv alpha tau, t] = turin_sim_alpha_cartesian_form_claus(lambda,G0,T(k),n,sigma_noise);
+    temporal0(k) = t.^0*abs(P).^2;
+    temporal1(k) = t.^1*abs(P).^2;
+    temporal2(k) = t.^2*abs(P).^2;
+    temporal3(k) = t.^3*abs(P).^2;
+    k
+end
+
+figure(2)
+tiledlayout(4,1)
+nexttile
+plot(T,temporal0,"o")
+
+nexttile
+plot(T,temporal1,"o")
+
+nexttile
+plot(T,temporal2,"o")
+
+nexttile
+plot(T,temporal3,"o")
+%% Varying T
+clear all
+
+tic % Starting a timer to see how long it takes to simulate
+%T = linspace(7.8e-11,7.8e-9,50); % Reverberation time, 
+a = 7.8e-11; b = 7.8e-9,Nl = 200;
+T = a + (b-a).*rand(Nl,1);
+G0 = db2pow(-83.9); % Reverberation gain converted from dB to power
+
+% Time delay tau is a possion arrival process with mean delay lambda
+lambda = 10e8; % randomly chosen arrival rate lambda 10e9 arrivals per second
+n = 150; % Number of iterations 
 
 sigma_noise = sqrt(0.28e-9); % noise variance
 order = 3;
@@ -44,41 +82,49 @@ for k = 1:length(T)
     k
 end    
 toc
+%%
 figure(2)
 plotT = tiledlayout(4,2)
 title(plotT,"Summary statistics varying T")
 nexttile
 plot(T,moment0,"o")
+xlim([a, b])
 title("Mean (m0)")
 
 nexttile
 plot(T,var0,"o")
 title("Var (m0)")
+xlim([a, b])
 
 nexttile
 plot(T,moment1,"o");
 title("Mean (m1)")
+xlim([a, b])
 
 nexttile
 plot(T,var1,"o")
 title("Var (m1)")
+xlim([a, b])
 
 nexttile
 plot(T,moment2,"o");
 title("Mean (m2)")
+xlim([a, b])
 
 nexttile
 plot(T,var2,"o")
 title("Var (m2)")
+xlim([a, b])
 
 nexttile
 plot(T,moment3,"o");
 title("Mean (m3)")
+xlim([a, b])
 
 nexttile
 plot(T,var3,"o")
-title("Var (m2)")
-
+title("Var (m3)")
+xlim([a, b])
 
 
 %% Varying G0
@@ -86,8 +132,10 @@ clear all
 
 tic
 T = 7.8e-9; % Reverberation time: 7.8 ns
-G0 = linspace(db2pow(-110), db2pow(-60), 50); % Reverberation gain converted from dB to power
 
+%G0 = linspace(db2pow(-110), db2pow(-60), 50); % Reverberation gain converted from dB to power
+a = db2pow(-110); b = db2pow(-60),Nl = 200;
+G0 = a + (b-a).*rand(Nl,1);
 % Time delay tau is a possion arrival process with mean delay lambda
 lambda = 10e8; % randomly chosen arrival rate lambda 10e9 arrivals per second
 n = 300;
@@ -162,7 +210,9 @@ G0 = db2pow(-83.9); % Reverberation gain converted from dB to power
 % Time delay tau is a possion arrival process with mean delay lambda
 lambda = 10e8; % randomly chosen arrival rate lambda 10e9 arrivals per second
 n = 30;
-sigma_noise = linspace(sqrt(0.28e-11),sqrt(0.28e-8),50);
+a = 5e-10; b = 5e-9,Nl = 200;
+sigma_noise = a + (b-a).*rand(Nl,1)
+%sigma_noise = linspace(sqrt(0.28e-11),sqrt(0.28e-8),50);
 order = 3;
 
 for k = 1:length(sigma_noise)
@@ -231,7 +281,9 @@ T = 7.8e-9; % Reverberation time: 7.8 ns
 G0 = db2pow(-83.9); % Reverberation gain converted from dB to power
 
 % Time delay tau is a possion arrival process with mean delay lambda
-lambda = linspace(10e6,20e9,50); % randomly chosen arrival rate lambda 10e9 arrivals per second
+a = 50e7; b = 50e8,Nl = 200;
+lambda = a + (b-a).*rand(Nl,1)
+%lambda = linspace(50e7,50e8,50); % randomly chosen arrival rate lambda 10e9 arrivals per second
 n = 30;
 sigma_noise = sqrt(0.28e-9);
 order = 3;

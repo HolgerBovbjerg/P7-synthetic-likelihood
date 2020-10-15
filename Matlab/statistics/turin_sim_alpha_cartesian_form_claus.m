@@ -68,7 +68,7 @@ P_h_mean = mean(P_h,2);
 
 %% Simulating the power spectrum, P_h, from the transfer function
 % Generate timestamps, in seconds, for time axis in plot
-t = (0:Ns-1)./(deltaf*Ns);
+t = (0:Ns-1)./(deltaf*(Ns-1));
 
 % We use the formulas from the paper before. 
 P_h_simulated = P_h_mean;
@@ -81,15 +81,15 @@ P_y_simulated = B*P_h_simulated;
 P_y_theoretical = P_h_theoretical + sigma_N^2/Ns;
 
 
-% Generation of plots showing the power spectrum. 
-figure(1)
-% plot(t*1e9,pow2db(P_y_theoretical), 'DisplayName', "P_y theoretical")
- hold on
- %plot(t*1e9,pow2db(P_y_simulated), 'DisplayName', "P_y simulated")
- title("P_y simulated")
- %xlim([0 200])
-% ylim([-110 -80])
- xlabel("Time [ns]")
- ylabel("Power [dB]")
- lgd = legend;
+% % Generation of plots showing the power spectrum. 
+% figure(1)
+% % plot(t*1e9,pow2db(P_y_theoretical), 'DisplayName', "P_y theoretical")
+%  hold on
+%  %plot(t*1e9,pow2db(P_y_simulated), 'DisplayName', "P_y simulated")
+%  title("P_y simulated")
+%  %xlim([0 200])
+% % ylim([-110 -80])
+%  xlabel("Time [ns]")
+%  ylabel("Power [dB]")
+%  lgd = legend;
 

@@ -13,37 +13,61 @@
 clear all
 
 %T = linspace(7.8e-11,7.8e-9,50); % Reverberation time, 
-a = 7.8e-11; b = 7.8e-7,Nl = 200;
+a = 7.8e-11; b = 7.8e-7,Nl = 300;
 T = a + (b-a).*rand(Nl,1);
 G0 = db2pow(-83.9); % Reverberation gain converted from dB to power
 
 % Time delay tau is a possion arrival process with mean delay lambda
 lambda = 10e8; % randomly chosen arrival rate lambda 10e9 arrivals per second
-n = 200; % Number of iterations 
+n = 150; % Number of iterations 
+% temporal0 = zeros(n,801,Nl);
+% temporal1 = temporal0;
+% temporal2 = temporal0;
+% temporal3 = temporal0;
 
 sigma_noise = sqrt(0.28e-9); % noise variance
 for k = 1:length(T)
     [P Pv alpha tau, t] = turin_sim_alpha_cartesian_form_claus(lambda,G0,T(k),n,sigma_noise);
-    temporal0(k) = trapz(t.^0*abs(P));
-    temporal1(k) = trapz(t.^1*abs(P));
-    temporal2(k) = trapz(t.^2*abs(P));
-    temporal3(k) = trapz(t.^3*abs(P));
+
+    for i = 1:n
+        temporal0(k,i) = trapz(t,(t.^0.*Pv(:,i)'));
+        temporal1(k,i) = trapz(t,(t.^1.*Pv(:,i)'));
+        temporal2(k,i) = trapz(t,(t.^2.*Pv(:,i)'));
+        temporal3(k,i) = trapz(t,(t.^3.*Pv(:,i)'));
+    end
+    
+%     temporal0(:,:,k) = (t.^0.*abs(Pv'));
+%     temporal1(:,:,k) = (t.^1.*abs(Pv'));
+%     temporal2(:,:,k) = (t.^2.*abs(Pv'));
+%     temporal3(:,:,k) = (t.^3.*abs(Pv'));
     k
 end
 
-figure(2)
+ 
+ figure(2)
+ tiledlayout(4,1)
+ nexttile
+plot(T,mean(temporal0,2),"o") 
+
+ nexttile
+plot(T,mean(temporal1,2),"o") 
+
+ nexttile
+plot(T,mean(temporal2,2),"o") 
+
+ nexttile
+plot(T,mean(temporal3,2),"o")
+
+figure(3)
 tiledlayout(4,1)
 nexttile
-plot(T,temporal0,"o")
-
+plot(T,var(temporal0'),"o")
 nexttile
-plot(T,temporal1,"o")
-
+plot(T,var(temporal1'),"o")
 nexttile
-plot(T,temporal2,"o")
-
+plot(T,var(temporal2'),"o")
 nexttile
-plot(T,temporal3,"o")
+plot(T,var(temporal3'),"o")
 %% Varying T
 clear all
 

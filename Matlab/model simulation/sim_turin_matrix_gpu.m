@@ -1,11 +1,11 @@
-function [P_y, t] = sim_turin_matrix_gpu(N, B, Ns, T, G0, lambda, sigma_N)
+function [P_y, Y_k, t] = sim_turin_matrix_gpu(N, B, Ns, T, G0, lambda, sigma_N)
     deltaf = B/(Ns-1); % Frequency seperation
     tmax = 1/deltaf; % Maximum delay, found from the bandwidth via frequency seperation
     t = (0:Ns-1)'./(deltaf*Ns); % Generate timestamps, in seconds
     %% Simulate model
     % We then simulate the transfer function, H_k, of the channel, using the
     % Turin model. 
-    Hk = gpuArray(zeros(Ns,N)); % buffer for generated channel response data                                             
+    H_k = gpuArray(zeros(Ns,N)); % buffer for generated channel response data                                             
     % We run the simulation N times, creating new data sets for each
     % realization. 
     for n = 1:N
@@ -22,16 +22,16 @@ function [P_y, t] = sim_turin_matrix_gpu(N, B, Ns, T, G0, lambda, sigma_N)
         % For every frequency index, k, the contribution from every multipath
         % component is added to the transfer function. 
         k = gpuArray((1:Ns));
-        Hk(:,n) = (exp(-1j*2*pi*deltaf*k.*tau).' * alpha);
+        H_k(:,n) = (exp(-1j*2*pi*deltaf*k.*tau).' * alpha);
     end
     % Generate noise vector
     noise = gpuArray(sigma_N^2 * (1/sqrt(2))* (randn(Ns,N) + 1j*randn(Ns,N)));
     % Add noise to transfer function with complex normal dist
-    Hk = Hk + noise;
+    Y_k = H_k + noise;
     % Power delay profile
-    P_h = abs(ifft(Hk,[],1)).^2;
+    P_h = abs(ifft(Y_k,[],1)).^2;
     % Averaging over the N realizations
     P_h_mean = mean(P_h,2); % acg. power delay profile
     % We use P_Y = E_s * P_h + noise (Noise is already included in simulation)
-    P_y = B*P_h_mean; %+ sigma_N^2/Ns;
+    P_y = B*P_h_mean; 
 end

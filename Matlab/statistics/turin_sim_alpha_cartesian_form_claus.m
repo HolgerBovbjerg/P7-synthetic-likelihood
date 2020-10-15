@@ -1,4 +1,4 @@
-function [P_y_simulated P_h alpha tau, t] = turin_sim_alpha_cartesian_form_claus(lambda,G0,T,N,sigma_N)
+function [P_y_simulated P_h alpha tau t] = turin_sim_alpha_cartesian_form_claus(lambda,G0,T,N,sigma_N)
 
 %% clear
 %%clear 
@@ -74,7 +74,9 @@ t = (0:Ns-1)./(deltaf*Ns);
 P_h_simulated = P_h_mean;
 P_h_theoretical = G0*exp(-(t/T));
 
+
 % We use P_Y = E_s * P_h + noise
+P_h = P_h*B;
 P_y_simulated = B*P_h_simulated;
 P_y_theoretical = P_h_theoretical + sigma_N^2/Ns;
 
@@ -83,7 +85,7 @@ P_y_theoretical = P_h_theoretical + sigma_N^2/Ns;
 figure(1)
 % plot(t*1e9,pow2db(P_y_theoretical), 'DisplayName', "P_y theoretical")
  hold on
- plot(t*1e9,pow2db(P_y_simulated), 'DisplayName', "P_y simulated")
+ %plot(t*1e9,pow2db(P_y_simulated), 'DisplayName', "P_y simulated")
  title("P_y simulated")
  %xlim([0 200])
 % ylim([-110 -80])

@@ -13,21 +13,21 @@
 clear all
 
 %T = linspace(7.8e-11,7.8e-9,50); % Reverberation time, 
-a = 2e-9; b = 50e-9,Nl = 200;
+a = 7.8e-11; b = 7.8e-7,Nl = 200;
 T = a + (b-a).*rand(Nl,1);
 G0 = db2pow(-83.9); % Reverberation gain converted from dB to power
 
 % Time delay tau is a possion arrival process with mean delay lambda
 lambda = 10e8; % randomly chosen arrival rate lambda 10e9 arrivals per second
-n = 100; % Number of iterations 
+n = 200; % Number of iterations 
 
 sigma_noise = sqrt(0.28e-9); % noise variance
 for k = 1:length(T)
     [P Pv alpha tau, t] = turin_sim_alpha_cartesian_form_claus(lambda,G0,T(k),n,sigma_noise);
-    temporal0(k) = t.^0*abs(P).^2;
-    temporal1(k) = t.^1*abs(P).^2;
-    temporal2(k) = t.^2*abs(P).^2;
-    temporal3(k) = t.^3*abs(P).^2;
+    temporal0(k) = trapz(t.^0*abs(P));
+    temporal1(k) = trapz(t.^1*abs(P));
+    temporal2(k) = trapz(t.^2*abs(P));
+    temporal3(k) = trapz(t.^3*abs(P));
     k
 end
 

@@ -8,17 +8,18 @@
 % When varying a value, n iterations are being done. The mean and variance
 % of these iterations are then found as our summary statistics.
 
-
 %% Varying T
 clear all
 
 %T = linspace(7.8e-11,7.8e-9,50); % Reverberation time, 
 a = 7.8e-11; b = 7.8e-7,Nl = 50;
 Tvary = a + (b-a).*rand(Nl,1);
+
 G0 = db2pow(-83.9); % Reverberation gain converted from dB to power
 
 % Time delay tau is a possion arrival process with mean delay lambda
 lambda = 10e8; % randomly chosen arrival rate lambda 10e9 arrivals per second
+
 n = 20; % Number of iterations 
 
 sigma_noise = sqrt(0.28e-9); % noise variance
@@ -34,7 +35,7 @@ for k = 1:length(Tvary)
     k
 end
 
- 
+
  figure(2)
 plotmean =  tiledlayout(4,1)
 title(plotmean,"Mean of the temporal moments while varying T") 
@@ -52,6 +53,8 @@ title("Mean (m2)")
 
  nexttile
 plot(Tvary,mean(temporal3T,2),"o")
+
+
 title("Mean (m3)")
 
 figure(3)
@@ -59,6 +62,7 @@ plotvar = tiledlayout(4,1)
 title(plotvar,"Variance of the temporal moments while varying T")
 
 nexttile
+
 plot(Tvary,var(temporal0T'),"o")
 title("Var (m0)")
 
@@ -272,15 +276,3 @@ title("Var (m2)")
 nexttile
 plot(lambdavary,var(temporal3lambda'),"o")
 title("Var (m3)")
-
-
-
-
-
-
-
-
-
-
-
-

@@ -5,7 +5,7 @@ clear
 % We have chosen some values based on "Estimator for Stochastic Channel Model without
 % Multipath Extraction using Temporal Moments" by Ayush Bharti et al. 
 
-N = 10;% 625; % Number of data sets to generate and average over
+N = 625;% % Number of data sets to generate and average over
 B = 4e9; % Bandwidth of signal: 4 GHz
 Ns = 801; % Number of sample points in each data set
 T = 7.8e-9; % Reverberation time: 7.8 ns
@@ -25,7 +25,7 @@ Hk = zeros(Ns,N); % buffer for generated channel response data
 for n = 1:N
     lmax = poissrnd(tmax*lambda);   % Number of multipath components, created from the Poisson distribution.
     tau = rand(lmax,1)*tmax;    % time-delays, drawn uniformly between 0 and the maximum delay.  
-    tau = sort(tau);
+%     tau = sort(tau);
     % For every multipath component a complex gain is generated, based on a
     % sigma generated from a corresponding delay time value. 
     % The complex number is generated in cartesian form by drawing the real

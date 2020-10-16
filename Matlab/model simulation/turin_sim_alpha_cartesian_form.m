@@ -5,7 +5,7 @@ clear
 % We have chosen some values based on "Estimator for Stochastic Channel Model without
 % Multipath Extraction using Temporal Moments" by Ayush Bharti et al. 
 
-N = 2000;% 625; % Number of data sets to generate and average over
+N = 625;% % Number of data sets to generate and average over
 B = 4e9; % Bandwidth of signal: 4 GHz
 Ns = 801; % Number of sample points in each data set
 T = 7.8e-9; % Reverberation time: 7.8 ns

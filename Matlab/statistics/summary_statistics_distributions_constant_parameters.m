@@ -9,8 +9,8 @@ Ns = 801; % Number of frequency samples in transfer function
 % Time delay tau is a possion arrival process with mean delay lambda
 lambda = 10e9; % randomly chosen arrival rate lambda 10e9 arrivals per second
 
-Nr = 50;    % Number of Turin realizations pr summary statistic vector
-Nl = 500;   % Number of different summary statistic vectors generated
+Nr = 100;    % Number of Turin realizations pr summary statistic vector
+Nl = 1000;   % Number of different summary statistic vectors generated
 
 ss = zeros(Nl,8); % Matrix for summary statistics
 
@@ -24,7 +24,7 @@ est_time = Nl*t_per_stat
 %%
 tic
 for i = 1:Nl    
-    ss(i,:) = create_statistics(Nr, T, G0, lambda, sigma_N, B, Ns);
+    ss(i,:) = create_statistics(Nr, T, G0, lambda, sigma_N, B, Ns); 
 end
 toc
 %%
@@ -54,13 +54,13 @@ hist(ss(:,5),bins)
 title("Histogram of variance of 0th temporal moment")
 
 nexttile
-hist(ss(:,5),bins)
+hist(ss(:,6),bins)
 title("Histogram of variance of 1st temporal moment")
 
 nexttile
-hist(ss(:,5),bins)
+hist(ss(:,7),bins)
 title("Histogram of variance of 2nd temporal moment")
 
 nexttile
-hist(ss(:,5),bins)
+hist(ss(:,8),bins)
 title("Histogram of variance of 3rd temporal moment")

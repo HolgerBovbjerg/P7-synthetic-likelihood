@@ -1,4 +1,4 @@
-function [P_h, t] = sim_turin_matrix_gpu(N, B, Ns, T, G0, lambda, sigma_N)
+function [P_y, t] = sim_turin_matrix_gpu(N, B, Ns, T, G0, lambda, sigma_N)
     deltaf = B/(Ns-1); % Frequency seperation
     tmax = 1/deltaf; % Maximum delay, found from the bandwidth via frequency seperation
     t = (0:Ns-1)'./(deltaf*Ns); % Generate timestamps, in seconds
@@ -31,9 +31,7 @@ function [P_h, t] = sim_turin_matrix_gpu(N, B, Ns, T, G0, lambda, sigma_N)
     % Power delay profile
     P_h = abs(ifft(Y_k,[],1)).^2;
     % Averaging over the N realizations
-    P_h_mean = mean(P_h,2); % acg. power delay profile
-    % We use P_Y = E_s * P_h + noise (Noise is already included in simulation)
-    P_y = B*P_h_mean; 
-    
-    P_h = P_h*B;
+%     P_h_mean = mean(P_h,2); % acg. power delay profile
+    % We use P_Y = E_s * P_h + noise (Noise is already included in simulation)    
+    P_y = P_h*B;
 end

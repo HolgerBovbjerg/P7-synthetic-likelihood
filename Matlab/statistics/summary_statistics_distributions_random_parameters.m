@@ -12,7 +12,7 @@ lambda = 10e9; % randomly chosen arrival rate lambda 10e9 arrivals per second
 Nr = 100;    % Number of Turin realizations pr summary statistic vector
 Nl = 1000;   % Number of different summary statistic vectors generated
 
-ss = zeros(Nl,8); % Matrix for summary statistics
+ss1 = zeros(3,Nl,8); % Matrix for summary statistics
 
 tic
 temp = create_statistics(Nr, T, G0, lambda, sigma_N, B, Ns);
@@ -37,44 +37,49 @@ lambda = lambda_min + (lambda_max-lambda_min).*rand(Nl,1);
 
 %%
 tic
-for i = 1:Nl    
-    ss(i,:) = create_statistics(Nr, T(i), G0(i), lambda(i), sigma_N(i), B, Ns);
-end
+for j = 1:3
+    for i = 1:Nl    
+        ss1(j,i,:) = create_statistics(Nr, T(j), G0(j), lambda(j), sigma_N(j), B, Ns);
+    end
+end 
 toc
 %%
 bins = 35;
-figure(1)
-plotstatistics =  tiledlayout(2,4);
-title(plotstatistics,"Histograms of summary statistics, from "+ Nl +" summary statistic vectors, with random input parameters") 
 
-nexttile
-hist((ss(:,1)),bins)
-title("Histogram of mean of 0th temporal moment")
+for j = 1:3
+    figure(j)
+    plotstatistics =  tiledlayout(2,4);
+    title(plotstatistics,"Histograms of summary statistics, from "+ Nl +" summary statistic vectors, with random input parameters") 
 
-nexttile
-hist(ss(:,2),bins)
-title("Histogram of mean of 1st temporal moment")
+    nexttile
+    histogram(ss1(j,:,1),100)
+    title("Histogram of mean of 0th temporal moment")
 
-nexttile
-hist(ss(:,3),bins)
-title("Histogram of mean of 2nd temporal moment")
+    nexttile
+    histogram(ss1(j,:,2),'Normalization','probability')
+    title("Histogram of mean of 1st temporal moment")
 
-nexttile
-hist(ss(:,4),bins)
-title("Histogram of mean of 3rd temporal moment")
+    nexttile
+    histogram(ss1(j,:,3),'Normalization','probability')
+    title("Histogram of mean of 2nd temporal moment")
 
-nexttile
-hist(ss(:,5),bins)
-title("Histogram of variance of 0th temporal moment")
+    nexttile
+    histogram(ss1(j,:,4),'Normalization','probability')
+    title("Histogram of mean of 3rd temporal moment")
 
-nexttile
-hist(ss(:,6),bins)
-title("Histogram of variance of 1st temporal moment")
+    nexttile
+    histogram(ss1(j,:,5),'Normalization','probability')
+    title("Histogram of variance of 0th temporal moment")
 
-nexttile
-hist(ss(:,7),bins)
-title("Histogram of variance of 2nd temporal moment")
+    nexttile
+    histogram(ss1(j,:,6),'Normalization','probability')
+    title("Histogram of variance of 1st temporal moment")
 
-nexttile
-hist(ss(:,8),bins)
-title("Histogram of variance of 3rd temporal moment")
+    nexttile
+    histogram(ss1(j,:,7),'Normalization','probability')
+    title("Histogram of variance of 2nd temporal moment")
+
+    nexttile
+    histogram(ss1(j,:,8),'Normalization','probability')
+    title("Histogram of variance of 3rd temporal moment")
+end

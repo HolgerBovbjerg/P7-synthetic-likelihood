@@ -10,7 +10,7 @@ Ns = 801; % Number of frequency samples in transfer function
 lambda = 10e9; % randomly chosen arrival rate lambda 10e9 arrivals per second
 
 Nr = 100;    % Number of Turin realizations pr summary statistic vector
-Nl = 1000;   % Number of different summary statistic vectors generated
+Nl = 600;   % Number of different summary statistic vectors generated
 
 ss1 = zeros(3,Nl,8); % Matrix for summary statistics
 
@@ -37,100 +37,49 @@ lambda = lambda_min + (lambda_max-lambda_min).*rand(Nl,1);
 
 %%
 tic
-for j = 1:3
+for j = 1:6
     for i = 1:Nl    
         ss1(j,i,:) = create_statistics(Nr, T(j), G0(j), lambda(j), sigma_N(j), B, Ns);
     end
 end 
 toc
 %%
-bins = 35;
+bins = 25;
 
-for j = 1:3
+for j = 1:6
     figure(j)
-    plotstatistics =  tiledlayout(2,4);
+    plotstatistics(j) =  tiledlayout(2,4);
     title(plotstatistics,"Histograms of summary statistics, from "+ Nl +" summary statistic vectors, with random input parameters") 
 
     for k = 1:4
         nexttile
         hold on
-        pd = fitdist(ss1(j,:,k)','Normal');
+        pd_normal = fitdist(ss1(j,:,k)','Normal');
+        pd_lognormal = fitdist(ss1(j,:,k)','Lognormal');
         x_vals = linspace(min(ss1(j,:,k)),max(ss1(j,:,k)),bins);
-        mu = mean(pd);
-        sigma = sqrt(var(pd));
         histogram(ss1(j,:,k),'Normalization','pdf','Binedges',x_vals,'FaceColor','b')
-        p = plot(x_vals,pdf(pd,x_vals),'r');
-        legend(p,"\mu = "+num2str(mu,2)+", \sigma = "+num2str(sigma,2))
-        title("Histogram of mean of temporal moment "+(k-1))
+        p_normal = plot(x_vals,pdf(pd_normal,x_vals),'r', 'Linewidth',3);
+        p_lognormal = plot(x_vals,pdf(pd_lognormal,x_vals),'g', 'Linewidth',3);
+        legend([p_normal p_lognormal],{'Normal','Lognormal'})
+%         legend([p_normal p_lognormal],{"\mu = "+num2str(pd_normal.mu,2)+", \sigma = "+num2str(pd_normal.sigma,2),'Lognormal'})
+        title("     Histogram of mean of temporal moment "+(k-1))
     end
     
     for k = 5:8
         nexttile
         hold on
-        pd = fitdist(ss1(j,:,k)','Normal');
+        pd_normal = fitdist(ss1(j,:,k)','Normal');
+        pd_lognormal = fitdist(ss1(j,:,k)','Lognormal');
         x_vals = linspace(min(ss1(j,:,k)),max(ss1(j,:,k)),bins);
-        mu = mean(pd);
-        sigma = sqrt(var(pd));
         histogram(ss1(j,:,k),'Normalization','pdf','Binedges',x_vals,'FaceColor','b')
-        p = plot(x_vals,pdf(pd,x_vals),'r');
-        legend(p,"\mu = "+num2str(mu,2)+", \sigma = "+num2str(sigma,2))
-        title("Histogram of variance of temporal moment "+(k-5))
+        p_normal = plot(x_vals,pdf(pd_normal,x_vals),'r', 'Linewidth',3);
+        p_lognormal = plot(x_vals,pdf(pd_lognormal,x_vals),'g', 'Linewidth',3);
+        legend([p_normal p_lognormal],{'Normal','Lognormal'})
+%         legend([p_normal p_lognormal],{"\mu = "+num2str(pd_normal.mu,2)+", \sigma = "+num2str(pd_normal.sigma,2),'Lognormal'})
+        title("          Histogram of variance of temporal moment "+(k-5))
     end   
-    
-%     nexttile
-%     hold on
-%     pd = fitdist(ss1(j,:,2)','Normal');
-%     plot(linspace(min(ss1(j,:,2)),max(ss1(j,:,2)),bins),pdf(pd,linspace(min(ss1(j,:,2)),max(ss1(j,:,2)),bins)))
-%     histogram(ss1(j,:,2),'Normalization','pdf','Binedges',linspace(min(ss1(j,:,2)),max(ss1(j,:,2)),bins))
-%     title("Histogram of mean of 1st temporal moment")
-% 
-%     nexttile
-%     hold on
-%     pd = fitdist(ss1(j,:,3)','Normal');
-%     plot(linspace(min(ss1(j,:,3)),max(ss1(j,:,3)),bins),pdf(pd,linspace(min(ss1(j,:,3)),max(ss1(j,:,3)),bins)))
-%     histogram(ss1(j,:,3),'Normalization','pdf','Binedges',linspace(min(ss1(j,:,3)),max(ss1(j,:,3)),bins))
-%     title("Histogram of mean of 2nd temporal moment")
-% 
-%     nexttile
-%     hold on
-%     pd = fitdist(ss1(j,:,4)','Normal');
-%     plot(linspace(min(ss1(j,:,4)),max(ss1(j,:,4)),bins),pdf(pd,linspace(min(ss1(j,:,4)),max(ss1(j,:,4)),bins)))
-%     histogram(ss1(j,:,4),'Normalization','pdf','Binedges',linspace(min(ss1(j,:,4)),max(ss1(j,:,4)),bins))
-%     title("Histogram of mean of 3rd temporal moment")
-% 
-%     nexttile
-%     hold on
-%     pd = fitdist(ss1(j,:,5)','Normal');
-%     plot(linspace(min(ss1(j,:,5)),max(ss1(j,:,5)),bins),pdf(pd,linspace(min(ss1(j,:,5)),max(ss1(j,:,5)),bins)))
-%     histogram(ss1(j,:,5),'Normalization','pdf','Binedges',linspace(min(ss1(j,:,5)),max(ss1(j,:,5)),bins))
-%     title("Histogram of variance of 0th temporal moment")
-% 
-%     nexttile
-%     hold on
-%     pd = fitdist(ss1(j,:,6)','Normal');
-%     plot(linspace(min(ss1(j,:,6)),max(ss1(j,:,6)),bins),pdf(pd,linspace(min(ss1(j,:,6)),max(ss1(j,:,6)),bins)))
-%     histogram(ss1(j,:,6),'Normalization','pdf','Binedges',linspace(min(ss1(j,:,6)),max(ss1(j,:,6)),bins))
-%     title("Histogram of variance of 1st temporal moment")
-% 
-%     nexttile
-%     hold on
-%     pd = fitdist(ss1(j,:,7)','Normal');
-%     plot(linspace(min(ss1(j,:,7)),max(ss1(j,:,7)),bins),pdf(pd,linspace(min(ss1(j,:,7)),max(ss1(j,:,7)),bins)))
-%     histogram(ss1(j,:,7),'Normalization','pdf','Binedges',linspace(min(ss1(j,:,7)),max(ss1(j,:,7)),bins))
-%     title("Histogram of variance of 2nd temporal moment")
-% 
-%     nexttile
-%     hold on
-%     pd = fitdist(ss1(j,:,8)','Normal');
-%     plot(linspace(min(ss1(j,:,8)),max(ss1(j,:,8)),bins),pdf(pd,linspace(min(ss1(j,:,8)),max(ss1(j,:,8)),bins)))
-%     histogram(ss1(j,:,8),'Normalization','pdf','Binedges',linspace(min(ss1(j,:,8)),max(ss1(j,:,8)),bins))
-%     title("Histogram of variance of 3rd temporal moment")
 end
 %%
-pd = fitdist(ss1(j,:,1)','Normal');
-figure(1)
-hold on
-% histogram(ss1(j,:,1),'Binedges',linspace(min(ss1(j,:,1)),max(ss1(j,:,1)),bins))
-histogram(ss1(j,:,1),'Normalization','pdf','Binedges',linspace(min(ss1(j,:,1)),max(ss1(j,:,1)),bins))
-plot(linspace(min(ss1(j,:,1)),max(ss1(j,:,1)),bins),pdf(pd,linspace(min(ss1(j,:,1)),max(ss1(j,:,1)),bins)))
-title("Histogram of mean of 0th temporal moment")
+% for j = 1:6
+%     exportgraphics(plotstatistics(j),"Distribution_of_summary_statistics_with_fixed_parameter_set_"+num2str(j)+".pdf",'ContentType','vector')
+% end

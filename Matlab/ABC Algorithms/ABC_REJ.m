@@ -4,8 +4,8 @@
 % Aproximate Bayesian Computation usink Markov Chain Monte Carlo simulation: DREAM(ABC) 
 
 % -------------------------------------------------------------------------------
-N  = 25;        % Number of different turin simulations.
-Ns = 300;       % Number of time entries for each turin simulation. 
+N  = 50;        % Number of different turin simulations.
+Ns = 600;       % Number of time entries for each turin simulation. 
 Bw = 4e9;       % Bandwidth (4Ghz).
 
 %% --------- Generate "observed data" used as Y_obs -----------------------------
@@ -54,7 +54,7 @@ all_accepted_params      = zeros(4,iterParamsUpdate*iterDistance);
 
 tic
 %% ABC Rejection algorith with epsilon and limit update  -------------------------------
-disp('ABC rejection algorithm computing, please wait ... ')
+disp('ABC rejection algorithm computing, please wait... ')
 for params_updates = 1:iterParamsUpdate
     for i = 1:iterDistance
         while distance > epsilon 
@@ -125,7 +125,7 @@ for params_updates = 1:iterParamsUpdate
         epsilon = epsilon - 0.00001;
     end
     
-    disp(params_updates)
+    disp(params_updates);
 end    
 toc
 

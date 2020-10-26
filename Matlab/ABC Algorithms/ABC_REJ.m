@@ -121,7 +121,7 @@ for params_updates = 1:iterParamsUpdate
 end    
 toc
 
-x = 1:61;
+x = 1:100;
 x = x * 20;
 t = tiledlayout(2,2, 'TileSpacing', 'none', 'Padding', 'compact');
 title(t,'Parameter estimation using ABC rejection algorithm for Turin model');
@@ -139,7 +139,6 @@ yline(4.07e-9);
 title('G_0 - reverbation gain')
 xlabel('Accepted sample nbr.')
 % xtitle('Sample number');
-
 
 nexttile
 scatter(x,final_params(3,:))

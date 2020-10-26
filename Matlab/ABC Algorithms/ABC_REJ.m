@@ -1,15 +1,11 @@
 
-%% ABC implementation 1 most basic - ABC REJECTION ALGORITHM:
-% Population Monte Carlo simulation 
+%% ABC implementation 1 - ABC REJECTION ALGORITHM:
 % based om the paper: 
 % Aproximate Bayesian Computation usink Markov Chain Monte Carlo simulation: DREAM(ABC) 
 
-% Once summary statistics have been defined we are left with finding those
-% values of the parameter for which <= epsilon.
-
 % -------------------------------------------------------------------------------
-N  = 50;        % Number of different turin simulations.
-Ns = 650;       % Number of time entries for each turin simulation. 
+N  = 25;        % Number of different turin simulations.
+Ns = 300;       % Number of time entries for each turin simulation. 
 Bw = 4e9;       % Bandwidth (4Ghz).
 
 %% --------- Generate "observed data" used as Y_obs -----------------------------
@@ -26,7 +22,7 @@ S_observed = sumStatMeanMoment(t_observed, P_Y_observed);
 disp('Summary statistics of observed data generated...')
 % -------- END observed data generation  -------------------------------------------
 
-%% --- Initial max/min conditions for parameters prior distribution ------
+%% --- Initial max/min conditions for parameters (prior distribution) --------------
 % a = min , b = max
  T_a = 7.8e-13; 
  T_b = 7.8e-6;  
@@ -38,7 +34,6 @@ disp('Summary statistics of observed data generated...')
  sigmaN_b = sqrt(28e-6);
  
 %% -----------------------------------------------------------------------
-
 
 % Initial epsilon (acceptable distance error)
 epsilon = 0.005; 
@@ -58,7 +53,7 @@ accepted_params   = zeros(4,iterDistance);
 all_accepted_params      = zeros(4,iterParamsUpdate*iterDistance);
 
 tic
-%% ABC Rejection algorith with epsilon and limit update 
+%% ABC Rejection algorith with epsilon and limit update  -------------------------------
 disp('ABC rejection algorithm computing, please wait ... ')
 for params_updates = 1:iterParamsUpdate
     for i = 1:iterDistance

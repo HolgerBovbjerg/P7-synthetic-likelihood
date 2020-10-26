@@ -7,51 +7,62 @@
 % Once summary statistics have been defined we are left with finding those
 % values of the parameter for which <= epsilon.
 
-
+% -------------------------------------------------------------------------------
 N  = 50;        % Number of different turin simulations.
 Ns = 650;       % Number of time entries for each turin simulation. 
-Bw = 4e9;       % Bandwidth (5Mhz).
+Bw = 4e9;       % Bandwidth (4Ghz).
 
 %% --------- Generate "observed data" used as Y_obs -----------------------------
 
 param_T       = 7.8e-9; 
-param_G0      = 4.07e-9;  % db = -83.9);  
+param_G0      = 4.07e-9;    % dB = -83.9  
 param_lambda  = 10e-12;   
-sigma_N       = 1.673e-4;   %  same as sqrt(28e-9);
+sigma_N       = 1.673e-4;   %  equal to sqrt(28e-9)
 
 [P_Y_observed, t_observed] = sim_turin_matrix(N, Bw, Ns, param_T, param_G0, param_lambda, sigma_N);
 
 % Do summary statistics on the observed data 
 S_observed = sumStatMeanMoment(t_observed, P_Y_observed); 
-% -------- END observed data  -------------------------------------------
+% -------- END observed data generation  -------------------------------------------
 
-%%
-iterParamsUpdate = 61;
-iterDistance = 20;
-accepted_distance = zeros(iterParamsUpdate,1);
-accepted_params = zeros(4,iterDistance);
-final_params = zeros(4,iterParamsUpdate*iterDistance);
-epsilon = 0.005; % Acceptable error 
-distance = epsilon + 1;
-total_iter = 1;
 %% --- Initial max/min conditions for parameters prior distribution ------
 % a = min , b = max
- T_a = 7.8e-17; 
- T_b = 7.8e-3;  
- G0_a = 8.89e-15;    % Power gain (not in dB)
+ T_a = 7.8e-13; 
+ T_b = 7.8e-6;  
+ G0_a = 8.89e-13;    % Power gain (not in dB)
  G0_b = 4.07e-6;     % Power gain (not in dB)
  lambda_a = 10e-15;
- lambda_b = 10e-8;
- sigmaN_a = sqrt(28e-14); 
- sigmaN_b = sqrt(28e-4);
+ lambda_b = 10e-9;
+ sigmaN_a = sqrt(28e-13); 
+ sigmaN_b = sqrt(28e-6);
+ 
 %% -----------------------------------------------------------------------
+
+
+% Initial epsilon (acceptable distance error)
+epsilon = 0.005; 
+distance = epsilon + 1; 
+
+% counter for indexing final_params
+total_iter = 1;
+
+% Number of times epsilon is decreased
+iterParamsUpdate = 100;
+% Number of accepted parameters (theta) before epsilon decreased
+iterDistance = 20;
+
+% Preallocation of vectors: 
+accepted_distance = zeros(iterParamsUpdate,1);
+accepted_params   = zeros(4,iterDistance);
+all_accepted_params      = zeros(4,iterParamsUpdate*iterDistance);
+
 tic
 %% ABC Rejection algorith with epsilon and limit update 
 for params_updates = 1:iterParamsUpdate
     for i = 1:iterDistance
         while distance > epsilon 
             %% STEP 1: 
-            % Sample parameter from a defined prior distribution:
+            % Sample parameter from a defined prior distribution (uniform distribution):
             
         	% T (Reverberation time):
             param_T = T_a + (T_b-T_a).*rand(1,1); % generate one random number
@@ -83,19 +94,19 @@ for params_updates = 1:iterParamsUpdate
         end  
         
         accepted_distance(i) = distance;
-        distance = epsilon + 1; % "Reset" the distance to be higher than epsilon.
-        % When a distance is withn acceptable limits (distance < epsilon)
-        % continue and save the parameter
+        distance = epsilon + 1; % "Reset" the distance to be higher than epsilon
+       
+        % When a distance is withn acceptable limits (distance < epsilon) save the parameter
         accepted_params(1,i) =  param_T;
         accepted_params(2,i) =  param_G0;
         accepted_params(3,i) =  param_lambda;
         accepted_params(4,i) =  param_sigma_N;
         
-        % Save the accepted final parameter from each iteration
-        final_params(1,total_iter) =  param_T;
-        final_params(2,total_iter) =  param_G0;
-        final_params(3,total_iter) =  param_lambda;
-        final_params(4,total_iter) =  param_sigma_N;
+        % Save the accepted parameters from all iterations
+        all_accepted_params(1,total_iter) =  param_T;
+        all_accepted_params(2,total_iter) =  param_G0;
+        all_accepted_params(3,total_iter) =  param_lambda;
+        all_accepted_params(4,total_iter) =  param_sigma_N;
         
         total_iter = total_iter + 1;
     end 

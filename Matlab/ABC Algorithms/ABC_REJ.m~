@@ -25,26 +25,37 @@ sigma_N       = 1.673e-4;   %  same as sqrt(28e-9);
 S_observed = sumStatMeanMoment(t_observed, P_Y_observed); 
 % -------- END observed data  -------------------------------------------
 
-%%
-iterParamsUpdate = 50;
-iterDistance = 1000;
+%% --- Initial max/min conditions for parameters prior distribution ------
+% a = min , b = max
+ T_a = 7.8e-13; 
+ T_b = 7.8e-6;  
+ G0_a = 8.89e-13;    % Power gain (not in dB)
+ G0_b = 4.07e-6;     % Power gain (not in dB)
+ lambda_a = 10e-15;
+ lambda_b = 10e-9;
+ sigmaN_a = sqrt(28e-1); 
+ sigmaN_b = sqrt(28e-4);
+ 
+%% -----------------------------------------------------------------------
+
+
+% Initial epsilon (acceptable distance error)
+epsilon = 0.005; 
+distance = epsilon + 1; 
+
+% counter for indexing final_params
+total_iter = 1;
+
+% Preallocation of vectors: 
 accepted_distance = zeros(iterParamsUpdate,1);
 accepted_params = zeros(4,iterDistance);
 final_params = zeros(4,iterParamsUpdate*iterDistance);
-epsilon = 0.005; % Acceptable error 
-distance = epsilon + 1;
-total_iter = 1;
-%% --- Initial max/min conditions for parameters prior distribution ------
-% a = min , b = max
- T_a = 7.8e-17; 
- T_b = 7.8e-3;  
- G0_a = 8.89e-15;    % Power gain (not in dB)
- G0_b = 4.07e-6;     % Power gain (not in dB)
- lambda_a = 10e-15;
- lambda_b = 10e-8;
- sigmaN_a = sqrt(28e-14); 
- sigmaN_b = sqrt(28e-4);
-%% -----------------------------------------------------------------------
+
+% Number of times epsilon is decreased
+iterParamsUpdate = 100;
+% Number of accepted parameters (theta) done before decreasing epsilon
+iterDistance = 20;
+
 tic
 %% ABC Rejection algorith with epsilon and limit update 
 for params_updates = 1:iterParamsUpdate
@@ -121,7 +132,7 @@ for params_updates = 1:iterParamsUpdate
 end    
 toc
 
-x = 1:61;
+x = 1:100;
 x = x * 20;
 t = tiledlayout(2,2, 'TileSpacing', 'none', 'Padding', 'compact');
 title(t,'Parameter estimation using ABC rejection algorithm for Turin model');
@@ -130,25 +141,28 @@ nexttile
 scatter(x,final_params(1,:))
 yline(7.8e-9); % The actual parameter
 title('T - reverbation time ')
+xlabel('Accepted sample nbr.')
 % xtitle('Sample number');
 
 nexttile 
 scatter(x,final_params(2,:))
 yline(4.07e-9);
 title('G_0 - reverbation gain')
+xlabel('Accepted sample nbr.')
 % xtitle('Sample number');
-
 
 nexttile
 scatter(x,final_params(3,:))
 yline(10e-12);
 title('\lambda - arrival rate')
+xlabel('Accepted sample nbr.')
 % xtitle('Sample number');
 
 nexttile
 scatter(x,final_params(4,:))
 yline(1.673e-4);
 title('\sigma_n - sigma noise')
+xlabel('Accepted sample nbr.')
 % xtitle('Sample number');
 
 

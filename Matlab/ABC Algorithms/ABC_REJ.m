@@ -26,8 +26,8 @@ S_observed = sumStatMeanMoment(t_observed, P_Y_observed);
 % -------- END observed data  -------------------------------------------
 
 %%
-iterParamsUpdate = 50;
-iterDistance = 1000;
+iterParamsUpdate = 61;
+iterDistance = 20;
 accepted_distance = zeros(iterParamsUpdate,1);
 accepted_params = zeros(4,iterDistance);
 final_params = zeros(4,iterParamsUpdate*iterDistance);
@@ -130,12 +130,14 @@ nexttile
 scatter(x,final_params(1,:))
 yline(7.8e-9); % The actual parameter
 title('T - reverbation time ')
+xlabel('Accepted sample nbr.')
 % xtitle('Sample number');
 
 nexttile 
 scatter(x,final_params(2,:))
 yline(4.07e-9);
 title('G_0 - reverbation gain')
+xlabel('Accepted sample nbr.')
 % xtitle('Sample number');
 
 
@@ -143,12 +145,14 @@ nexttile
 scatter(x,final_params(3,:))
 yline(10e-12);
 title('\lambda - arrival rate')
+xlabel('Accepted sample nbr.')
 % xtitle('Sample number');
 
 nexttile
 scatter(x,final_params(4,:))
 yline(1.673e-4);
 title('\sigma_n - sigma noise')
+xlabel('Accepted sample nbr.')
 % xtitle('Sample number');
 
 

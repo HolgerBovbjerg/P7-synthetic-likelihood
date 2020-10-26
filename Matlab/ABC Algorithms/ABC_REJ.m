@@ -23,6 +23,7 @@ sigma_N       = 1.673e-4;   %  equal to sqrt(28e-9)
 
 % Do summary statistics on the observed data 
 S_observed = sumStatMeanMoment(t_observed, P_Y_observed); 
+disp('Summary statistics of observed data generated...')
 % -------- END observed data generation  -------------------------------------------
 
 %% --- Initial max/min conditions for parameters prior distribution ------
@@ -58,6 +59,7 @@ all_accepted_params      = zeros(4,iterParamsUpdate*iterDistance);
 
 tic
 %% ABC Rejection algorith with epsilon and limit update 
+disp('ABC rejection algorithm computing, please wait ... ')
 for params_updates = 1:iterParamsUpdate
     for i = 1:iterDistance
         while distance > epsilon 

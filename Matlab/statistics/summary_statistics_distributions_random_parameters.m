@@ -49,32 +49,28 @@ plotstatistics = zeros(2,1);
 for j = 1:3
     figure(j)
     plotstatistics(j) =  tiledlayout(2,3);
-    title(plotstatistics(j),"Histograms of logarithm of summary statistics, from "+ Nl +" summary statistic vectors, with random input parameters") 
+    title(plotstatistics(j),"Histograms of summary statistics, from "+ Nl +" summary statistic vectors, with fixed input parameter set") 
 
     for k = 1:3
         nexttile
         hold on
         x_vals = linspace(min(ss1(j,:,k)),max(ss1(j,:,k)),bins);
-        pd_lognormal = fitdist(ss1(j,:,k)','Lognormal');   
         pd_normal = fitdist(ss1(j,:,k)','Normal');
         histogram(ss1(j,:,k),'Normalization','pdf','Binedges',x_vals,'FaceColor','b')       
-        p_lognormal = plot(x_vals,pdf(pd_lognormal,x_vals),'g', 'Linewidth',2);
         p_normal = plot(x_vals,pdf(pd_normal,x_vals),'r', 'Linewidth',2);
-        legend([p_lognormal p_normal],{'Lognormal fit', 'Normal fit'});
-        title("     Histogram of mean of temporal moment "+(k-1))
+        legend([ p_normal],{ 'Normal fit'});
+        title("Histogram of mean of temporal moment "+(k-1))
     end
     
     for k = 4:6
         nexttile
         hold on
-        x_vals = linspace(min(ss1(j,:,k)),max(ss1(j,:,k)),bins);
-        pd_lognormal = fitdist(ss1(j,:,k)','Lognormal');   
+        x_vals = linspace(min(ss1(j,:,k)),max(ss1(j,:,k)),bins);   
         pd_normal = fitdist(ss1(j,:,k)','Normal');
         histogram(ss1(j,:,k),'Normalization','pdf','Binedges',x_vals,'FaceColor','b')
-        p_lognormal = plot(x_vals,pdf(pd_lognormal,x_vals),'g', 'Linewidth',2);
         p_normal = plot(x_vals,pdf(pd_normal,x_vals),'r', 'Linewidth',2);
-        legend([p_lognormal p_normal],{'Lognormal fit', 'Normal fit'});
-        title("          Histogram of variance of temporal moment "+(k-4))
+        legend([p_normal],{'Normal fit'});
+        title("Histogram of variance of temporal moment "+(k-4))
     end   
 end
 %%

@@ -13,13 +13,13 @@ G0 = db2pow(-83.9); % Reverberation gain converted from dB to power
 lambda = 10e9; % randomly chosen arrival rate lambda 10e9 arrivals per second
 sigma_N = sqrt(0.28e-9); % Noise standard deviation
 
-[P_y, Y_k, t] = sim_turin_matrix_gpu(N,B,Ns,T,G0,lambda,sigma_N);
+[P_y, t] = sim_turin_matrix_gpu(N,B,Ns,T,G0,lambda,sigma_N); % N realisations of Turin model power delay profile
 
 % We use the formulas from the paper before. 
 P_h_theoretical = G0*exp(-(t/T));
 
 % We use P_Y = E_s * P_h + noise (Noise is already included in simulation)
-P_y_simulated = P_y; %+ sigma_N^2/Ns;
+P_y_simulated = mean(P_y,2); 
 P_y_theoretical = P_h_theoretical + sigma_N^2/Ns; % theoretical does not need bandwidth scaling
 
 

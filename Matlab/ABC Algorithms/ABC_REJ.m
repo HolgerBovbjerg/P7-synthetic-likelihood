@@ -1,15 +1,12 @@
 
-%% ABC implementation 1 - ABC REJECTION ALGORITHM:
-% based om the paper: 
-% Aproximate Bayesian Computation usink Markov Chain Monte Carlo simulation: DREAM(ABC) 
+%% ABC implementation 2 - ABC ALGORITHM:
 
-% ----------------------------------------------------------------------------------
-N  = 50;        % Number of different turin simulations.
-Ns = 600;       % Number of time entries for each turin simulation. 
-Bw = 4e9;       % Bandwidth (4Ghz).
+%% --- Global turin model simulation parameters ---------------------------------------------------
+N  = 50;    % Number of different turin simulations.
+Ns = 600;   % Number of time entries for each turin simulation. 
+Bw = 4e9;   % Bandwidth (4Ghz).
 
-%% --------- Generate "observed data" used as Y_obs --------------------------------
-
+%% --- Generate "observed data" used as Y_obs -----------------------------------------------------
 param_T       = 7.8e-9; 
 param_G0      = 4.07e-9;    % dB = -83.9  
 param_lambda  = 10e9;       % arrival rate (1/s)    
@@ -20,9 +17,8 @@ sigma_N       = 1.673e-4;   % equal to sqrt(28e-9)
 % Do summary statistics on the observed data 
 S_observed = sumStatMeanMoment(t_observed, P_Y_observed); 
 disp('Summary statistics of observed data generated...')
-% -------- END observed data generation  -------------------------------------------
 
-%% --- Initial max/min conditions for parameters (prior distribution) --------------
+%% --- Initial max/min conditions for parameters (prior distribution) -----------------------------
 % a = min , b = max
  T_a = 7.8e-11; 
  T_b = 7.8e-7;  
@@ -33,25 +29,25 @@ disp('Summary statistics of observed data generated...')
  sigmaN_a = 1.673e-6; 
  sigmaN_b = 1.673e-2;
  
-%% ---------------------------------------------------------------------------------
 
-% Total iterations
+%% --- ABC algorithm ---------------------------------------------------------------------
+
+% Set total iterations
 iterations = 100;
 
 % Number of summary statistics sets to compute  
 sumstat_iter = 500;
 
 % Extract this amount of parameter entries from generated summary statistics
-% these are the smallest eucleudian distance values.   
+% these are the smallest euclidean distance values.   
 nbr_extract = 50;
 
 % Preallocation of vectors: 
 out = zeros(5,sumstat_iter);
 meanVar_params = zeros(8,iterations);
 
-index = 1;
+index = 1; % used as index for vector holding ALL extracted parameter values 
 
-%% ABC Rejection algorith with epsilon and limit update  ---------------------------
 disp('ABC rejection algorithm computing, please wait... ')
 tic
 for a = 1:iterations 
@@ -73,12 +69,13 @@ for a = 1:iterations
         %% STEP 3: Do summary statistics on the simulated dataset: 
         S_simulated = sumStatMeanMoment(t, P_Y);
          
-        %% STEP 4: calculate the difference in the summary statistics (eucleudian distance)
+        %% STEP 4: calculate the difference between observed and simulated the summary statistics 
+        % euclidean distance see formular in document.
         SS1 = ((S_simulated(1) - S_observed(1))/S_simulated(4))^2;
         SS2 = ((S_simulated(2) - S_observed(2))/S_simulated(5))^2;
         SS3 = ((S_simulated(3) - S_observed(3))/S_simulated(6))^2;
          
-        out(1,i) =  ((SS1 + SS2 + SS3)^(0.5)); % Eucleudian distance         
+        out(1,i) =  ((SS1 + SS2 + SS3)^(0.5));         
         out(2,i) =  param_T;
         out(3,i) =  param_G0;
         out(4,i) =  param_lambda;
@@ -87,10 +84,10 @@ for a = 1:iterations
         disp(i);
         
     end 
-  
-    % Transpose the out vector in order to use the function sortrow
+    
+    % Transpose the out vector in order to use the function "sortrow"
     out = out';
-    % Sort the out matrix so that the lowest eucleudian distance is at the
+    % Sort the out matrix so that the lowest euclidean distance is at the
     % (1,1) matrix position and highest distance is at (max,1) 
     out = sortrows(out); 
     % Transpose matrix back 
@@ -109,19 +106,18 @@ for a = 1:iterations
     
     % Extract the parameters that was used for generating the summary
     % statistics that was closest to the observed summary statistics
-    % i.e the lowest eucleudian distance
+    % i.e had the lowest euclidean distances
    
     for i = 1:nbr_extract
-        
         % Following vectors holds the CURRENT extracted parameter values 
-        % that was within eucleudian distance       
+        % that was within euclidean distance       
         params_T_lastExtract(i)       = out(2,i);
         params_G0_lastExtract(i)      = out(3,i);
         params_lambda_lastExtract(i)  = out(4,i);
         params_sigma_N_lastExtract(i) = out(5,i);
         
         % Following vectors holds ALL extracted parameter values 
-        % that was within eucleudian distance
+        % that was within euclidean distance
         params_T(index)       = out(2,i);
         params_G0(index)      = out(3,i);
         params_lambda(index)  = out(4,i);
@@ -130,7 +126,7 @@ for a = 1:iterations
         index = index + 1; 
     end
     
-   % Update the min/max values for the parameters for the next itteration 
+   % Update the min/max values for the parameters for the next iteration 
    T_a      = min(params_T_lastExtract);
    T_b      = max(params_T_lastExtract);
    G0_a     = min(params_G0_lastExtract);
@@ -140,10 +136,9 @@ for a = 1:iterations
    sigmaN_a = min(params_sigma_N_lastExtract);
    sigmaN_b = max(params_sigma_N_lastExtract);
    
-    
    % Calculate the mean and variance for each parameter from 
-   % the extracted parameters
-   
+   % the extracted parameters and save these in a new matrix
+  
    meanVar_params(1,a) = mean(params_T);
    meanVar_params(2,a) = mean(params_G0);
    meanVar_params(3,a) = mean(params_lambda);

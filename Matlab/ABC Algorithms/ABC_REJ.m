@@ -29,7 +29,6 @@ disp('Summary statistics of observed data generated...')
  sigmaN_a = 1.673e-6; 
  sigmaN_b = 1.673e-2;
  
-
 %% --- ABC rejection algorithm ---------------------------------------------------------------------
 % Rejection ratio = (sumstat_iter / nbr_extract) 
 
@@ -141,7 +140,9 @@ for a = 1:iterations
    sigmaN_b = max(params_sigma_N_lastExtract);
    
    % Calculate the mean and variance for each parameter from 
-   % the extracted parameters and save these in a new matrix.
+   % each iteration, and save in the matrix meanVar_params. 
+   % Column 1 contains all the means and variances 
+   % from iteration 1, column 2 for iteration 2...
    meanVar_params(1,a) = mean(params_T_lastExtract);
    meanVar_params(2,a) = mean(params_G0_lastExtract);
    meanVar_params(3,a) = mean(params_lambda_lastExtract);

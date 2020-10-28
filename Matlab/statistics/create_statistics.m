@@ -7,15 +7,20 @@ function S = create_statistics(M,N, T, G0, lambda, sigma_N, B, Ns)
     for j = 1:M
         % Draw a realization from the Turin model based on input parameters
         [Pv, t] = sim_turin_matrix_gpu(N, B, Ns, T, G0, lambda, sigma_N);
-
+        
         % t = gpuArray(t); % Time it and see if it is faster with. 
-        Pv = (Pv-max(Pv))/sqrt(var(Pv)); % Scaling
         % Calculate temporal moments with numerical integration
         m0 = trapz(t,(Pv));         % 0th moment (t^0*Pv = Pv)
         m1 = trapz(t,(t.^1.*Pv));   % 1st moment
         m2 = trapz(t,(t.^2.*Pv));   % 2nd moment
         m3 = trapz(t,(t.^3.*Pv));   % 3rd moment
-
+        
+        % take the log og moments
+        m0 = log(m0);
+        m1 = log(m1);
+        m2 = log(m2);
+        m3 = log(m3);
+        
         % Calculate summary statistics from moments
         S(j,1) = mean(m0);            % Mean of 0th moment 
         S(j,2) = mean(m1);            % Mean of 1st moment

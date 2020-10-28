@@ -8,29 +8,29 @@ Ns = 801; % Number of sample points in each data set
 T = 7.8e-9; % Reverberation time
 G0 = db2pow(-83.9); % Reverberation gain converted from dB to power
 lambda = 10e9; % randomly chosen arrival rate lambda 10e9 arrivals per second
-sigma_N = sqrt(0.28e-9); % Noise standard deviation
+sigma_N = sqrt(0.28e-9); % Nois'e standard deviation
 
 theta_real = [T G0 lambda sigma_N];
 S_measured = create_statistics(1,N, theta_real(1), theta_real(2), theta_real(3), theta_real(4), B, Ns);
 
 %% Synthetic likelihood
 % Number of summary statistic realisations per iteration
-Nr = 16; 
-N = 10;% % Number of Turin data sets to generate 
+Nr = 20; 
+N = 50; % Number of Turin data sets to generate 
 
 % Known parameters
 B = 4e9; % Bandwidth of signal
 Ns = 801; % Number of sample points in each data set
 
 % Guess of model parameter distribution (uniform) 
-Tmax = 9e-9;
-Tmin = 7e-9;
-G0max = db2pow(-70);
-G0min = db2pow(-90);
+Tmax = 10e-9;
+Tmin = 5e-9;
+G0max = db2pow(-50);
+G0min = db2pow(-100);
 lambdamax = 12e9;
-lambdamin = 8e9;
-sigma_Nmax = sqrt(0.35e-9);
-sigma_Nmin = sqrt(0.25e-9);
+lambdamin = 5e8;
+sigma_Nmax = sqrt(0.25e-10);
+sigma_Nmin = sqrt(0.25e-8);
 
 % Make guess from uniform distribution
 T = Tmin + (Tmax - Tmin)*rand; % Reverberation time
@@ -43,17 +43,17 @@ theta_guess = [T G0 lambda sigma_N]; % Initial guess
 % Generating statistics of synthetic data using initial guess on theta
 S_star = create_statistics(Nr, N, theta_guess(1), theta_guess(2), theta_guess(3), theta_guess(4), B, Ns);
 
-
+% S_star_scaled = (S_star - mean(S_star,1))./std(S_star,1); % Z-score normalisation
+% S_measured_scaled = (S_measured - mean(S_star,1))./std(S_star,1);
 %% Tester
-mu = mean(S_star); % Calculate mean of summary statistics from simulated data 
-Sigma = cov(S_star); % Calculate covariance of summary statistics from simulated data 
-% Sigma = equilibrate(Sigma);
-% L = -1/2*( ( (S_measured - mu)/(Sigma)) ) * (S_measured - mu)' - 1/2*log(det(Sigma)); % Synthetic likelihood L
+% mu = mean(S_star); % Calculate mean of summary statistics from simulated data 
+% Sigma = cov(S_star); % Calculate covariance of summary statistics from simulated data 
+% L = -1/2*( ( (S_measured-mu)/Sigma) ) * (S_measured-mu)' - 1/2*log(det(Sigma)); % Synthetic likelihood L
 
 %% Generate first likelihood based on initial guess
 
 L_guess = synth_loglikelihood(S_measured, S_star);
-M = 50; % Number of BSL posterior samples 
+M = 1000; % Number of BSL posterior samples 
 theta = zeros(M,4); % Buffer for parameter values
 L = zeros(M,1); % Buffer for log likelihood values
 theta(1,:) = theta_guess; % First guess

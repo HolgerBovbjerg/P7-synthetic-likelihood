@@ -1,5 +1,5 @@
 
-%% ABC implementation 2 - ABC ALGORITHM:
+%% ABC implementation 2 - ABC REJECTION ALGORITHM:
 
 %% --- Global turin model simulation parameters ---------------------------------------------------
 N  = 50;    % Number of different turin simulations.
@@ -30,7 +30,8 @@ disp('Summary statistics of observed data generated...')
  sigmaN_b = 1.673e-2;
  
 
-%% --- ABC algorithm ---------------------------------------------------------------------
+%% --- ABC rejection algorithm ---------------------------------------------------------------------
+% Rejection ratio = (sumstat_iter / nbr_extract) 
 
 % Set total iterations
 iterations = 100;
@@ -39,7 +40,7 @@ iterations = 100;
 sumstat_iter = 200;
 
 % Extract this amount of parameter entries from each generated summary
-% statisticsn.
+% statistic
 nbr_extract = 20;
 
 % Preallocation of vectors: 

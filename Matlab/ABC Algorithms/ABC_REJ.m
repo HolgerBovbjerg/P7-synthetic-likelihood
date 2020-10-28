@@ -3,17 +3,17 @@
 % based om the paper: 
 % Aproximate Bayesian Computation usink Markov Chain Monte Carlo simulation: DREAM(ABC) 
 
-% -------------------------------------------------------------------------------
+% ----------------------------------------------------------------------------------
 N  = 50;        % Number of different turin simulations.
 Ns = 600;       % Number of time entries for each turin simulation. 
 Bw = 4e9;       % Bandwidth (4Ghz).
 
-%% --------- Generate "observed data" used as Y_obs -----------------------------
+%% --------- Generate "observed data" used as Y_obs --------------------------------
 
 param_T       = 7.8e-9; 
 param_G0      = 4.07e-9;    % dB = -83.9  
-param_lambda  = 10e-12;   
-sigma_N       = 1.673e-4;   %  equal to sqrt(28e-9)
+param_lambda  = 10e9;       % arrival rate (1/s)    
+sigma_N       = 1.673e-4;   % equal to sqrt(28e-9)
 
 [P_Y_observed, t_observed] = sim_turin_matrix(N, Bw, Ns, param_T, param_G0, param_lambda, sigma_N);
 
@@ -24,143 +24,170 @@ disp('Summary statistics of observed data generated...')
 
 %% --- Initial max/min conditions for parameters (prior distribution) --------------
 % a = min , b = max
- T_a = 7.8e-13; 
- T_b = 7.8e-6;  
- G0_a = 8.89e-13;    % Power gain (not in dB)
- G0_b = 4.07e-6;     % Power gain (not in dB)
- lambda_a = 10e-15;
- lambda_b = 10e-9;
- sigmaN_a = sqrt(28e-13); 
- sigmaN_b = sqrt(28e-6);
+ T_a = 7.8e-11; 
+ T_b = 7.8e-7;  
+ G0_a = 8.89e-11;    % Power gain (not in dB)
+ G0_b = 4.07e-7;     % Power gain (not in dB)
+ lambda_a = 1e8;
+ lambda_b = 20e10;
+ sigmaN_a = 1.673e-6; 
+ sigmaN_b = 1.673e-2;
  
-%% -----------------------------------------------------------------------
+%% ---------------------------------------------------------------------------------
 
-% Initial epsilon (acceptable distance error)
-epsilon = 0.005; 
-distance = epsilon + 1; 
+% Total iterations
+iterations = 100;
 
-% counter for indexing final_params
-total_iter = 1;
+% Number of summary statistics sets to compute  
+sumstat_iter = 500;
 
-% Number of times epsilon is decreased
-iterParamsUpdate = 100;
-% Number of accepted parameters (theta) before epsilon decreased
-iterDistance = 20;
+% Extract this amount of parameter entries from generated summary statistics
+% these are the smallest eucleudian distance values.   
+nbr_extract = 50;
 
 % Preallocation of vectors: 
-accepted_distance = zeros(iterParamsUpdate,1);
-accepted_params   = zeros(4,iterDistance);
-all_accepted_params      = zeros(4,iterParamsUpdate*iterDistance);
+out = zeros(5,sumstat_iter);
+meanVar_params = zeros(8,iterations);
 
-tic
-%% ABC Rejection algorith with epsilon and limit update  -------------------------------
+index = 1;
+
+%% ABC Rejection algorith with epsilon and limit update  ---------------------------
 disp('ABC rejection algorithm computing, please wait... ')
-for params_updates = 1:iterParamsUpdate
-    for i = 1:iterDistance
-        while distance > epsilon 
-            %% STEP 1: 
-            % Sample parameter from a defined prior distribution (uniform distribution):
-            
-        	% T (Reverberation time):
-            param_T = T_a + (T_b-T_a).*rand(1,1); % generate one random number
-        	% G0 (Reverberation gain)  
-            param_G0 = (G0_a + (G0_b-G0_a).*rand(1,1)); % generate one random number within the given limits.
-            % lambda ()  
-            param_lambda = lambda_a + (lambda_b-lambda_a).*rand(1,1); % generate one random number within the given limits.
-            % sigma_N (Variance noise floor)
-            param_sigma_N = sigmaN_a + (sigmaN_b-sigmaN_a).*rand(1,1); % generate one random number within the given limits.
+tic
+for a = 1:iterations 
+    for i = 1:sumstat_iter
+        %% STEP 1: Sample parameter from predefined prior distribution (uniform):
         
-            %% STEP 2:
-            % Simulate data using Turing model based on parameters from STEP 1 
-            [P_Y, t] = sim_turin_matrix(N, Bw, Ns, param_T, param_G0, param_lambda, param_sigma_N);
+        % T (Reverberation time):
+        param_T = T_a + (T_b-T_a).*rand(1,1); % generate one random number
+        % G0 (Reverberation gain)  
+        param_G0 = (G0_a + (G0_b-G0_a).*rand(1,1)); % generate one random number within the given limits.
+        % lambda ()  
+        param_lambda = lambda_a + (lambda_b-lambda_a).*rand(1,1); % generate one random number within the given limits.
+        % sigma_N (Variance noise floor)
+        param_sigma_N = sigmaN_a + (sigmaN_b-sigmaN_a).*rand(1,1); % generate one random number within the given limits.
         
-            %% STEP 3:
-            %  Do summary statistics on the simulated dataset: 
-            S_simulated = sumStatMeanMoment(t, P_Y);
+        %% STEP 2: Simulate data using Turing model, based on parameters from STEP 1 
+        [P_Y, t] = sim_turin_matrix(N, Bw, Ns, param_T, param_G0, param_lambda, param_sigma_N);
+        
+        %% STEP 3: Do summary statistics on the simulated dataset: 
+        S_simulated = sumStatMeanMoment(t, P_Y);
          
-            %% STEP 4: calculate eucledian distance function 
-            % Calculate the distance function (difference between simulated and observed summary statistics.     
-            % Calculated based on the three summary statistics of 0th, 1st and 2nd moment.  
-            % See formular on page ....
+        %% STEP 4: calculate the difference in the summary statistics (eucleudian distance)
+        SS1 = ((S_simulated(1) - S_observed(1))/S_simulated(4))^2;
+        SS2 = ((S_simulated(2) - S_observed(2))/S_simulated(5))^2;
+        SS3 = ((S_simulated(3) - S_observed(3))/S_simulated(6))^2;
          
-            SS1 = ((S_simulated(1) - S_observed(1))/S_simulated(4))^2;
-            SS2 = ((S_simulated(2) - S_observed(2))/S_simulated(5))^2;
-            SS3 = ((S_simulated(3) - S_observed(3))/S_simulated(6))^2;
-         
-            distance = ((SS1 + SS2 + SS3)^(0.5))/1e24; % a scaling problem here - needs investigation
-        end  
+        out(1,i) =  ((SS1 + SS2 + SS3)^(0.5)); % Eucleudian distance         
+        out(2,i) =  param_T;
+        out(3,i) =  param_G0;
+        out(4,i) =  param_lambda;
+        out(5,i) =  param_sigma_N;
         
-        accepted_distance(i) = distance;
-        distance = epsilon + 1; % "Reset" the distance to be higher than epsilon
-       
-        % When a distance is withn acceptable limits (distance < epsilon) save the parameter
-        accepted_params(1,i) =  param_T;
-        accepted_params(2,i) =  param_G0;
-        accepted_params(3,i) =  param_lambda;
-        accepted_params(4,i) =  param_sigma_N;
+        disp(i);
         
-        % Save the accepted parameters from all iterations
-        all_accepted_params(1,total_iter) =  param_T;
-        all_accepted_params(2,total_iter) =  param_G0;
-        all_accepted_params(3,total_iter) =  param_lambda;
-        all_accepted_params(4,total_iter) =  param_sigma_N;
-        
-        total_iter = total_iter + 1;
     end 
-   
-    % Update the parameter limits from the max/min values from the above
-    % accepted parameters
-    T_a      = min(accepted_params(1,:));
-    T_b      = max(accepted_params(1,:));
-    G0_a     = min(accepted_params(2,:));
-    G0_b     = max(accepted_params(2,:));
-    lambda_a = min(accepted_params(3,:));
-    lambda_b = max(accepted_params(3,:));
-    sigmaN_a = min(accepted_params(4,:));
-    sigmaN_b = max(accepted_params(4,:));
+  
+    % Transpose the out vector in order to use the function sortrow
+    out = out';
+    % Sort the out matrix so that the lowest eucleudian distance is at the
+    % (1,1) matrix position and highest distance is at (max,1) 
+    out = sortrows(out); 
+    % Transpose matrix back 
+    out = out';
     
-    % Update epsilon: Need a better solution based on the research on the
-    % epsilon update
-    if epsilon > 0 
-        epsilon = epsilon - 0.00001;
+    % Preallocating vectors
+    params_T_lastExtract       = zeros(1,nbr_extract);
+    params_G0_lastExtract      = zeros(1,nbr_extract);
+    params_lambda_lastExtract  = zeros(1,nbr_extract);
+    params_sigma_N_lastExtract = zeros(1,nbr_extract);
+    
+    params_T       = zeros(1,nbr_extract*iterations);
+    params_G0      = zeros(1,nbr_extract*iterations);
+    params_lambda  = zeros(1,nbr_extract*iterations);
+    params_sigma_N = zeros(1,nbr_extract*iterations);
+    
+    % Extract the parameters that was used for generating the summary
+    % statistics that was closest to the observed summary statistics
+    % i.e the lowest eucleudian distance
+   
+    for i = 1:nbr_extract
+        
+        % Following vectors holds the CURRENT extracted parameter values 
+        % that was within eucleudian distance       
+        params_T_lastExtract(i)       = out(2,i);
+        params_G0_lastExtract(i)      = out(3,i);
+        params_lambda_lastExtract(i)  = out(4,i);
+        params_sigma_N_lastExtract(i) = out(5,i);
+        
+        % Following vectors holds ALL extracted parameter values 
+        % that was within eucleudian distance
+        params_T(index)       = out(2,i);
+        params_G0(index)      = out(3,i);
+        params_lambda(index)  = out(4,i);
+        params_sigma_N(index) = out(5,i);   
+        
+        index = index + 1; 
     end
     
-    disp(params_updates);
-end    
+   % Update the min/max values for the parameters for the next itteration 
+   T_a      = min(params_T_lastExtract);
+   T_b      = max(params_T_lastExtract);
+   G0_a     = min(params_G0_lastExtract);
+   G0_b     = max(params_G0_lastExtract);
+   lambda_a = min(params_lambda_lastExtract);
+   lambda_b = max(params_lambda_lastExtract);
+   sigmaN_a = min(params_sigma_N_lastExtract);
+   sigmaN_b = max(params_sigma_N_lastExtract);
+   
+    
+   % Calculate the mean and variance for each parameter from 
+   % the extracted parameters
+   
+   meanVar_params(1,a) = mean(params_T);
+   meanVar_params(2,a) = mean(params_G0);
+   meanVar_params(3,a) = mean(params_lambda);
+   meanVar_params(4,a) = mean(params_sigma_N);
+   meanVar_params(5,a) = var(params_T);
+   meanVar_params(6,a) = var(params_G0);
+   meanVar_params(7,a) = var(params_lambda);
+   meanVar_params(8,a) = var(params_sigma_N);
+    
+   disp(a);
+end 
+
 toc
 
-x = 1:(iterParamsUpdate * iterDistance);
+   
+%{    
 t = tiledlayout(2,2, 'TileSpacing', 'none', 'Padding', 'compact');
 title(t,'Parameter estimation using ABC rejection algorithm for Turin model');
 
 nexttile
-scatter(x,all_accepted_params(1,:))
-yline(7.8e-9); % The actual parameter
-title('T - reverbation time ')
-xlabel('Accepted sample nbr.')
-% xtitle('Sample number');
+scatter(x,params_T)
+yline(7.8e-9); % Parameter used for generating observed data 
+title('T - reverbation time ');
+xlabel('Accepted sample nbr.');
 
 nexttile 
-scatter(x,all_accepted_params(2,:))
-yline(4.07e-9);
-title('G_0 - reverbation gain')
-xlabel('Accepted sample nbr.')
-% xtitle('Sample number');
+scatter(x,params_G0)
+yline(4.07e-9); % Parameter used for generating observed data 
+title('G_0 - reverbation gain');
+xlabel('Accepted sample nbr.');
 
 nexttile
-scatter(x,all_accepted_params(3,:))
-yline(10e-12);
-title('\lambda - arrival rate')
-xlabel('Accepted sample nbr.')
-% xtitle('Sample number');
+scatter(x,params_lambda)
+yline(10e-12); % Parameter used for generating observed data 
+title('\lambda - arrival rate');
+xlabel('Accepted sample nbr.');
 
 nexttile
-scatter(x,all_accepted_params(4,:))
-yline(1.673e-4);
-title('\sigma_n - sigma noise')
-xlabel('Accepted sample nbr.')
-% xtitle('Sample number');
+scatter(x,params_sigma_N)
+yline(1.673e-4); % Parameter used for generating observed data 
+title('\sigma_n - sigma noise');
+xlabel('Accepted sample nbr.');
 
+%}
 
 
  

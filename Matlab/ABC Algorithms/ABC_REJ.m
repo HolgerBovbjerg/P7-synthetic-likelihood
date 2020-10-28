@@ -35,12 +35,12 @@ disp('Summary statistics of observed data generated...')
 % Set total iterations
 iterations = 100;
 
-% Number of summary statistics sets to compute  
-sumstat_iter = 500;
+% Number of summary statistics sets to generate  
+sumstat_iter = 200;
 
-% Extract this amount of parameter entries from generated summary statistics
-% these are the smallest euclidean distance values.   
-nbr_extract = 50;
+% Extract this amount of parameter entries from each generated summary
+% statisticsn.
+nbr_extract = 20;
 
 % Preallocation of vectors: 
 out = zeros(5,sumstat_iter);
@@ -48,7 +48,7 @@ meanVar_params = zeros(8,iterations);
 
 index = 1; % used as index for vector holding ALL extracted parameter values 
 
-disp('ABC rejection algorithm computing, please wait... ')
+disp('ABC algorithm computing, please wait... ')
 tic
 for a = 1:iterations 
     for i = 1:sumstat_iter
@@ -69,12 +69,15 @@ for a = 1:iterations
         %% STEP 3: Do summary statistics on the simulated dataset: 
         S_simulated = sumStatMeanMoment(t, P_Y);
          
-        %% STEP 4: calculate the difference between observed and simulated the summary statistics 
-        % euclidean distance see formular in document.
+        %% STEP 4: calculate the difference between observed and simulated summary statistics 
+        % Euclidean distance see formular in document.
         SS1 = ((S_simulated(1) - S_observed(1))/S_simulated(4))^2;
         SS2 = ((S_simulated(2) - S_observed(2))/S_simulated(5))^2;
         SS3 = ((S_simulated(3) - S_observed(3))/S_simulated(6))^2;
-         
+        
+        % Row 1 of the out vector contains the euclidean distance 
+        % the rest of the rows contains the corresponding parameters 
+        % used for generating that specific distance.    
         out(1,i) =  ((SS1 + SS2 + SS3)^(0.5));         
         out(2,i) =  param_T;
         out(3,i) =  param_G0;
@@ -87,7 +90,7 @@ for a = 1:iterations
     
     % Transpose the out vector in order to use the function "sortrow"
     out = out';
-    % Sort the out matrix so that the lowest euclidean distance is at the
+    % Sort the "out" matrix so that the lowest euclidean distance is at the
     % (1,1) matrix position and highest distance is at (max,1) 
     out = sortrows(out); 
     % Transpose matrix back 
@@ -137,17 +140,18 @@ for a = 1:iterations
    sigmaN_b = max(params_sigma_N_lastExtract);
    
    % Calculate the mean and variance for each parameter from 
-   % the extracted parameters and save these in a new matrix
-  
-   meanVar_params(1,a) = mean(params_T);
-   meanVar_params(2,a) = mean(params_G0);
-   meanVar_params(3,a) = mean(params_lambda);
-   meanVar_params(4,a) = mean(params_sigma_N);
-   meanVar_params(5,a) = var(params_T);
-   meanVar_params(6,a) = var(params_G0);
-   meanVar_params(7,a) = var(params_lambda);
-   meanVar_params(8,a) = var(params_sigma_N);
-    
+   % the extracted parameters and save these in a new matrix.
+   meanVar_params(1,a) = mean(params_T_lastExtract);
+   meanVar_params(2,a) = mean(params_G0_lastExtract);
+   meanVar_params(3,a) = mean(params_lambda_lastExtract);
+   meanVar_params(4,a) = mean(params_sigma_N_lastExtract);
+   meanVar_params(5,a) = var(params_T_lastExtract);
+   meanVar_params(6,a) = var(params_G0_lastExtract);
+   meanVar_params(7,a) = var(params_lambda_lastExtract);
+   meanVar_params(8,a) = var(params_sigma_N_lastExtract);
+   % The mean and variances can now be used to plot a normal distribution of the parameters
+   % for all iterations.
+   
    disp(a);
 end 
 

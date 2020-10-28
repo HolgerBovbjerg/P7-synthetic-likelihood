@@ -1,27 +1,14 @@
 %% Distribution of summary statistics
 clear
-T = 7.8e-9; % Reverberation time: 7.8 ns
-G0 = db2pow(-83.9); % Reverberation gain converted from dB to power
-sigma_N = sqrt(28e-9); % Noise variance
 B = 4e9; % Bandwidth of signal: 4 GHz
 Ns = 801; % Number of frequency samples in transfer function
-
-% Time delay tau is a possion arrival process with mean delay lambda
-lambda = 10e9; % randomly chosen arrival rate lambda 10e9 arrivals per second
 
 Nr = 100;    % Number of Turin realizations pr summary statistic vector
 Nl = 1500;   % Number of different summary statistic vectors generated
 
-ss1 = zeros(3,Nl,6); % Matrix for summary statistics
+ss1 = zeros(3,Nl,4); % Matrix for summary statistics
 
-tic
-temp = create_statistics(Nr, T, G0, lambda, sigma_N, B, Ns);
-t_per_stat = toc;
-
-
-est_time = Nl*t_per_stat
-
-%%
+%% Draw random parameter values from uniform distribution 
 
 T_min = 7.8e-11; T_max = 7.8e-7;
 T = T_min + (T_max-T_min).*rand(Nl,1);
@@ -46,12 +33,11 @@ toc
 %%
 bins = 25;
 plotstatistics = zeros(2,1);
-for j = 1:3
+for j = 3:3
     figure(j)
-    plotstatistics(j) =  tiledlayout(2,3);
-    title(plotstatistics(j),"Histograms of summary statistics, from "+ Nl +" summary statistic vectors, with fixed input parameter set") 
-
-    for k = 1:3
+    plotstatistics(j) =  tiledlayout(2,2);
+    
+    for k = 1:2
         nexttile
         hold on
         x_vals = linspace(min(ss1(j,:,k)),max(ss1(j,:,k)),bins);
@@ -59,10 +45,13 @@ for j = 1:3
         histogram(ss1(j,:,k),'Normalization','pdf','Binedges',x_vals,'FaceColor','b')       
         p_normal = plot(x_vals,pdf(pd_normal,x_vals),'r', 'Linewidth',2);
         legend([ p_normal],{ 'Normal fit'});
-        title("Histogram of mean of temporal moment "+(k-1))
+        t = title(sprintf('Histogram of $\\ln( \\overline{m}_%d$)', k-1),'Interpreter','latex'); 
+        set(t, "FontSize",29);
+        % Use Lilliefors test to see if data is normal
+        lillietest(ss1(j,:,k),'Alpha',0.01)
     end
     
-    for k = 4:6
+    for k = 3:4
         nexttile
         hold on
         x_vals = linspace(min(ss1(j,:,k)),max(ss1(j,:,k)),bins);   
@@ -70,11 +59,13 @@ for j = 1:3
         histogram(ss1(j,:,k),'Normalization','pdf','Binedges',x_vals,'FaceColor','b')
         p_normal = plot(x_vals,pdf(pd_normal,x_vals),'r', 'Linewidth',2);
         legend([p_normal],{'Normal fit'});
-        title("Histogram of variance of temporal moment "+(k-4))
+        t = title(sprintf('Histogram of $\\ln(\\mathrm{Var}(m_%d)$)', k-3),'Interpreter','latex'); 
+        set(t, "FontSize",29);
+        % Use Lilliefors test to see if data is normal
+        lillietest(ss1(j,:,k),'Alpha',0.01)
     end   
 end
 %%
 % for j = 1:3
-%     exportgraphics(plotstatistics(j),"Distribution_of_logarithm_of_summary_statistics_with_random_parameter_set_"+num2str(j)+".pdf",'ContentType','vector')
+%     exportgraphics(plotstatistics(j),"Distribution_of_logarithm_of_summary_statistics_with_fixed_parameter_set_"+num2str(j)+".pdf",'ContentType','vector')
 % end
-%   

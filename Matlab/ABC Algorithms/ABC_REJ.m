@@ -6,7 +6,7 @@ N  = 50;    % Number of different turin simulations.
 Ns = 600;   % Number of time entries for each turin simulation. 
 Bw = 4e9;   % Bandwidth (4Ghz).
 
-%% --- Generate "observed data" used as Y_obs -----------------------------------------------------
+%% --- Generate "observed data" -----------------------------------------------------
 param_T       = 7.8e-9; 
 param_G0      = 4.07e-9;    % dB = -83.9  
 param_lambda  = 10e9;       % arrival rate (1/s)    

@@ -30,7 +30,7 @@ disp('Summary statistics of observed data generated...')
  sigmaN_b = 1.673e-2;
  
 %% --- ABC rejection algorithm ---------------------------------------------------------------------
-% Rejection ratio = (sumstat_iter / nbr_extract) 
+% Rejection ratio = 1 - (nbr_extract / sumstat_iter) 
 
 % Set total iterations
 iterations = 100;

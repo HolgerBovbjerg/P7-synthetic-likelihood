@@ -1,8 +1,7 @@
-% This function returns a matrix with N summary statistics vectors based
-% upon N realizations from the Turin model. 
+% This function returns a matrix with M summary statistic vectors of length
+% 8 based upon N realizations from the Turin model. 
 % Each realization is generated from parameters drawn uniformly between the
 % limits given to the function. 
-
 function S = create_statistics(M,N, T, G0, lambda, sigma_N, B, Ns)
     S = zeros(M,8);
     for j = 1:M

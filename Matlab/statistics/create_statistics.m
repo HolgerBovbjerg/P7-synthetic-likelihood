@@ -2,6 +2,7 @@
 % upon N realizations from the Turin model. 
 % Each realization is generated from parameters drawn uniformly between the
 % limits given to the function. 
+
 function S = create_statistics(M,N, T, G0, lambda, sigma_N, B, Ns)
     S = zeros(M,8);
     for j = 1:M
@@ -25,4 +26,4 @@ function S = create_statistics(M,N, T, G0, lambda, sigma_N, B, Ns)
         S(j,7) = log(var(m2));             % Variance of 2nd moment
         S(j,8) = log(var(m3));             % Variance of 3rd moment
     end
-end
+

@@ -14,7 +14,6 @@ a = db2pow(-85); b = db2pow(-82),Nl = 200;
 G0vary = a + (b-a).*rand(Nl,1);
 
 A = [sort(Tvary) sort(G0vary) sort(lambdavary) sort(sigma_noise_vary) ];
-covmatrix = cov(A);
-B = [Tvary(100) G0vary(100) lambdavary(100) sigma_noise_vary(100)];
-a
+covmatrix = cov(A)./100;
+
 end

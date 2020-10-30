@@ -1,6 +1,6 @@
 clear all
 
-N = 40; % Number of Turin simulations
+N = 50; % Number of Turin simulations
 likelihoods = zeros(1,N);
 T = 7.8e-9;
 lambda = 10e8;
@@ -28,7 +28,7 @@ sigma_N = 1.73155e-05 ; % noise variance
 L = 10; % Numberof statistics vectors used per likelihood
 
 theta_curr = [T G0 lambda sigma_N];
-
+s_sim = zeros(L,8); 
 for i = 1:L
     [Pv, t] = sim_turin_matrix_gpu(N, B, Ns, theta_curr(1), theta_curr(2), theta_curr(3), theta_curr(4));
     s_sim(i,:) = create_statistics(Pv, t);
@@ -40,43 +40,28 @@ end
  loglikelihood = (synth_loglikelihood(s_obs,s_sim))
  % -------------------------------------------- %
   %     % MCMC part
-  figure(1)
-  hold on
-  yline(7.8e-9)
   accept = 0;
-  k = 1000; % Number of MCMC steps
+  k = 200; % Number of MCMC steps
   thetas= zeros(4,k);
+  
   for j = 1:k
       j
-      L = 1; % Numberof statistics vectors used per likelihood
-      theta_prop = mvnrnd(theta_curr,theta_para_cov./1000);
-      %theta_prop = thetauniform;
-      for o = 1:4
-         while theta_prop(o) < 0
-             a = mvnrnd(theta_curr,theta_para_cov./1000);
-             theta_prop(o) = a(o);
-         end
-      end
+      L = 10; % Numberof statistics vectors used per likelihood
+      theta_prop = mvnrnd(theta_curr,theta_para_cov);
+
       for i = 1:L
           [Pv, t] = sim_turin_matrix_gpu(N, B, Ns, theta_prop(1), theta_prop(2), theta_prop(3), theta_prop(4));
           s_sim(i,:) = create_statistics(Pv, t);
       end
       loglikelihoodnew = (synth_loglikelihood(s_obs,s_sim))
-      likelihoods(j) = exp(loglikelihoodnew-loglikelihood);
-%        r = likelihoodnew/likelihood
-%     exp(likelihoodnew-likelihood)
+
       if exp(loglikelihoodnew-loglikelihood) > rand
 %        if r > rand
         loglikelihood = loglikelihoodnew;
           theta_curr = theta_prop;
           accept = accept+1
-          thetas(:,j) = theta_curr';
-          plot(j,theta_curr(1),"o")
-      else
-          plot(j,theta_curr(1),"o")
-          thetas(:,j) = theta_curr';
       end
-      
+      thetas(:,j) = theta_curr'; 
   end   
   %%
     figure(2)

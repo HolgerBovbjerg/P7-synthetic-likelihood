@@ -443,24 +443,24 @@ title("Var (m3)")
 T = 7.8e-9;
 G0 = db2pow(-83.9);
 
-a = 7.8e-11; b = 7.8e-7,Nl = 100;
+a = 7.8e-11; b = 7.8e-7,Nl = 200;
 Tvary = a + (b-a).*rand(Nl,1);
 
-a = 50e6; b = 50e7,Nl = 100;
+a = 50e6; b = 50e7,Nl = 200;
 lambdavary = a + (b-a).*rand(Nl,1)
 
 
-a = sqrt(5e-10); b = sqrt(5e-9),Nl = 100;
+a = sqrt(5e-10); b = sqrt(5e-9),Nl = 200;
 sigma_noise_vary = a + (b-a).*rand(Nl,1);
 
 
-a = db2pow(-110); b = db2pow(-60),Nl = 100;
+a = db2pow(-110); b = db2pow(-60),Nl = 200;
 G0vary = a + (b-a).*rand(Nl,1);
 
 
 
 % Time delay tau is a possion arrival process with mean delay lambda
-n = 100; % Number of iterations 
+n = 300; % Number of iterations 
 B = 4e9; % Bandwidth of signal: 4 GHz
 statsmatrixeverything = zeros(Nl,8);
 
@@ -591,6 +591,7 @@ title("Correlation varying everything")
 %%
 eveythingcoeffs = corrcoef(statsmatrixeverything);
 
-imagesc(eveythingcoeffs);
+imagesc(eveythingcoeffs,[0.6 0.75]);
 colorbar
-title("Correlation varying everything")
+title("Correlation varying all parameters")
+exportgraphics(gcf,'correlationmapsAllVars.pdf','ContentType','vector')

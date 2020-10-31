@@ -1,6 +1,6 @@
 clear all
 
-N = 50; % Number of Turin simulations
+N = 100; % Number of Turin simulations
 likelihoods = zeros(1,N);
 T = 7.8e-9;
 lambda = 10e8;
@@ -14,7 +14,7 @@ theta_para_cov = find_theta_cov;
 % -------------------------------------------- %
 % "Observed data for testing"
 
-[Pv, t] = sim_turin_matrix_gpu(N*10, B, Ns, T, G0, lambda, sigma_N);
+[Pv, t] = sim_turin_matrix_gpu(N, B, Ns, T, G0, lambda, sigma_N);
 
 s_obs = create_statistics(Pv, t);
 
@@ -25,31 +25,27 @@ T =7.155e-9;
 lambda = 1.09878e+09;
 G0 = 4.44556e-09; % Reverberation gain converted from dB to power
 sigma_N = 1.73155e-05 ; % noise variance
-L = 10; % Numberof statistics vectors used per likelihood
+L = 200; % Numberof statistics vectors used per likelihood
 
 theta_curr = [T G0 lambda sigma_N];
 s_sim = zeros(L,8); 
-for i = 1:L
+parfor i = 1:L
     [Pv, t] = sim_turin_matrix_gpu(N, B, Ns, theta_curr(1), theta_curr(2), theta_curr(3), theta_curr(4));
     s_sim(i,:) = create_statistics(Pv, t);
 end
   
- theta_mean = mean(s_sim);
- theta_cov = cov(s_sim)
- %theta_cov2 = (1/(length(s_obs)-1))*sum(((s_obs-theta_mean)*(s_obs-theta_mean)'))
  loglikelihood = (synth_loglikelihood(s_obs,s_sim))
  % -------------------------------------------- %
   %     % MCMC part
   accept = 0;
-  k = 200; % Number of MCMC steps
+  k = 10; % Number of MCMC steps
   thetas= zeros(4,k);
-  
+  tic
   for j = 1:k
       j
-      L = 10; % Numberof statistics vectors used per likelihood
       theta_prop = mvnrnd(theta_curr,theta_para_cov);
 
-      for i = 1:L
+      parfor i = 1:L
           [Pv, t] = sim_turin_matrix_gpu(N, B, Ns, theta_prop(1), theta_prop(2), theta_prop(3), theta_prop(4));
           s_sim(i,:) = create_statistics(Pv, t);
       end
@@ -62,7 +58,8 @@ end
           accept = accept+1
       end
       thetas(:,j) = theta_curr'; 
-  end   
+  end  
+  toc
   %%
     figure(2)
     tiledlayout(4,1)

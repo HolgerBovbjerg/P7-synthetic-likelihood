@@ -3,7 +3,7 @@ normalG0 = makedist("Normal","mu",db2pow(-83.9),"sigma",9.115476637038641e-11)
 normallambda = makedist("Normal","mu",10e8,"sigma",2.986250270870375e+07)
 normalsigma = makedist("Normal","mu",sqrt(0.28e-9),"sigma",3.637616513134642e-07)
 
-yT = linspace(0,1e-8,500);
+yT = linspace(1e-8,1e-8,500);
 yG0 = linspace(db2pow(-85),db2pow(-81),500);
 ylambda = linspace(1e8,20e8,500);
 ysigma = linspace(sqrt(0.1e-9),sqrt(0.4e-9),500);

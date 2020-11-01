@@ -438,7 +438,7 @@ plot(lambdavary,statsmatrixLambda(:,8),"o")
 title("Var (m3)")
 
 
-%%
+%% statistics varying everything
 
 T = 7.8e-9;
 G0 = db2pow(-83.9);
@@ -589,9 +589,24 @@ colorbar
 title("Correlation varying everything")
 
 %%
+set(0,'defaulttextinterpreter','latex')
 eveythingcoeffs = corrcoef(statsmatrixeverything);
-
+eveythingcoeffs = round(eveythingcoeffs,3);
+M = num2cell(eveythingcoeffs);
+M = cellfun(@num2str,M,'UniformOutput',false);
 imagesc(eveythingcoeffs,[0.6 0.75]);
+set(gca,'TickLabelInterpreter', 'latex');
+ax = gca;
+ax.YTick = 1:8;
+ax.YTickLabel = {'$\bar{m}_1$','$\bar{m}_2$','$\bar{m}_3$','$\bar{m}_4$','Var(m1)','Var(m2)','Var(m3)','Var(m4)'};
+
+ax.XTick = 1:8;
+ax.XTickLabel = {'$\bar{m}_1$','$\bar{m}_2$','$\bar{m}_3$','$\bar{m}_4$','Var(m1)','Var(m2)','Var(m3)','Var(m4)'};
+for ii = 1:8
+    for jj = 1:8
+text(ii,jj,M(ii,jj),'HorizontalAlignment','Center')
+    end
+end
 colorbar
 title("Correlation varying all parameters")
 exportgraphics(gcf,'correlationmapsAllVars.pdf','ContentType','vector')

@@ -28,7 +28,7 @@ G0 = 6.056e-09; % Reverberation gain converted from dB to power
 sigma_N = 1.073155e-05 ; % noise variance
 L = 10; % Numberof statistics vectors used per likelihood
 
-theta_curr = [T G0 lambda sigma_N];
+  theta_curr = [T G0 lambda sigma_N];
 s_sim = zeros(L,8); 
 for i = 1:L
     [Pv, t] = sim_turin_matrix_gpu(N, B, Ns, theta_curr(1), theta_curr(2), theta_curr(3), theta_curr(4));
@@ -42,10 +42,11 @@ end
  % -------------------------------------------- %
   %     % MCMC part
   accept = 0;
-  k = 3000; % Number of MCMC steps
+  k = 200; % Number of MCMC steps
   thetas= zeros(4,k);
-  
-  for j = 1:k
+
+  thetas(:,1) = theta_curr'
+  for j = 2:k
       j
       L = 10; % Numberof statistics vectors used per likelihood
 
@@ -53,10 +54,10 @@ end
 
       
 
-          theta_prop(1) =normrnd(theta_curr(1),sqrt(theta_para_cov(1,1)));
-          theta_prop(2) =normrnd(theta_curr(2),sqrt(theta_para_cov(2,2)));
-          theta_prop(3) =normrnd(theta_curr(3),sqrt(theta_para_cov(3,3)));
-          theta_prop(4) =normrnd(theta_curr(4),sqrt(theta_para_cov(4,4)));
+          theta_prop(1) =abs(normrnd(theta_curr(1),sqrt(theta_para_cov(1,1))));
+          theta_prop(2) =abs(normrnd(theta_curr(2),sqrt(theta_para_cov(2,2))));
+          theta_prop(3) =abs(normrnd(theta_curr(3),sqrt(theta_para_cov(3,3))));
+          theta_prop(4) =abs(normrnd(theta_curr(4),sqrt(theta_para_cov(4,4))));
 
       for i = 1:L
           [Pv, t] = sim_turin_matrix_gpu(N, B, Ns, theta_prop(1), theta_prop(2), theta_prop(3), theta_prop(4));
@@ -167,4 +168,44 @@ end
 %     title("\sigma")
 %     
 
+%%
 
+figure(4)
+
+pd1 = fitdist(thetas(1,1000:k)','Normal');
+pd2 = fitdist(thetas(2,1000:k)','Normal');
+pd3 = fitdist(thetas(3,1000:k)','Normal');
+pd4 = fitdist(thetas(4,1000:k)','Normal');
+
+x1 = linspace(7.5e-9,8.5e-9,100);
+x2 = linspace(3.5e-9,4.5e-9,100);
+x3 = linspace(8e8,12e8,100);
+x4 = linspace(1e-5,2e-5,100);
+
+y1 = pdf(pd1,x1);
+y2 = pdf(pd2,x2);
+y3 = pdf(pd3,x3);
+y4 = pdf(pd4,x4);
+
+tiledlayout(4,1)
+
+nexttile
+histfit(thetas(1,1000:k),10)
+xline(7.8e-9,'LineWidth',4)
+fitdist(thetas(1,1000:k)','Normal')
+%plot(x1,y1)
+
+nexttile
+histfit(thetas(2,1000:k),10)
+xline(db2pow(-83.9),'LineWidth',4)
+% plot(x2,y2)
+
+nexttile
+histfit(thetas(3,1000:k),10)
+xline(10e8,'LineWidth',4)
+% plot(x3,y3)
+
+nexttile
+histfit(thetas(4,1000:k),10)
+xline(sqrt(0.28e-9),'LineWidth',4)
+% plot(x4,y4)

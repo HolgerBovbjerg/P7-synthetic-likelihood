@@ -1,5 +1,5 @@
 function covmatrix = find_theta_cov()
-a = 9e-9; b = 2e-9,Nl = 2000;
+a = 9e-9; b = 2e-9,Nl = 20000;
 Tvary = a + (b-a).*rand(Nl,1);
 
 a = 5e8; b = 15e8;

@@ -13,7 +13,7 @@ sigma_noise_vary = a + (b-a).*rand(Nl,1);
 a = db2pow(-85); b = db2pow(-82);
 G0vary = a + (b-a).*rand(Nl,1);
 
-A = [sort(Tvary) sort(G0vary) sort(lambdavary) sort(sigma_noise_vary) ];
+A = [(Tvary) (G0vary) (lambdavary) (sigma_noise_vary) ];
 covmatrix = cov(A);
 
 end

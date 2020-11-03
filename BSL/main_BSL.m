@@ -1,7 +1,7 @@
 clear all
 
 N = 200; % Number of Turin simulations
-likelihoods = zeros(1,N);
+
 T = 7.8e-9;
 lambda = 10e8;
 B = 4e9; % Bandwidth of signal: 4 GHz
@@ -30,7 +30,7 @@ L = 10; % Numberof statistics vectors used per likelihood
 
   theta_curr = [T G0 lambda sigma_N];
 s_sim = zeros(L,8); 
-for i = 1:L
+parfor i = 1:L
     [Pv, t] = sim_turin_matrix_gpu(N, B, Ns, theta_curr(1), theta_curr(2), theta_curr(3), theta_curr(4));
     s_sim(i,:) = create_statistics(Pv, t);
 end
@@ -38,43 +38,116 @@ end
  theta_mean = mean(s_sim);
  theta_cov = cov(s_sim)
  %theta_cov2 = (1/(length(s_obs)-1))*sum(((s_obs-theta_mean)*(s_obs-theta_mean)'))
- loglikelihood = (synth_loglikelihood(s_obs,s_sim))
+ loglikelihood = synth_loglikelihood(s_obs,s_sim)
  % -------------------------------------------- %
   %     % MCMC part
   accept = 0;
   k = 200; % Number of MCMC steps
   thetas= zeros(4,k);
-
+likelihoods = zeros(1,N);
   thetas(:,1) = theta_curr'
   for j = 2:k
       j
       L = 10; % Numberof statistics vectors used per likelihood
 
-         % theta_prop = mvnrnd(theta_curr,theta_para_cov);
+          theta_prop = mvnrnd(theta_curr,theta_para_cov);
 
       
 
-          theta_prop(1) =abs(normrnd(theta_curr(1),sqrt(theta_para_cov(1,1))));
-          theta_prop(2) =abs(normrnd(theta_curr(2),sqrt(theta_para_cov(2,2))));
-          theta_prop(3) =abs(normrnd(theta_curr(3),sqrt(theta_para_cov(3,3))));
-          theta_prop(4) =abs(normrnd(theta_curr(4),sqrt(theta_para_cov(4,4))));
+%           theta_prop(1) =abs(normrnd(theta_curr(1),sqrt(theta_para_cov(1,1))));
+%           theta_prop(2) =abs(normrnd(theta_curr(2),sqrt(theta_para_cov(2,2))));
+%           theta_prop(3) =abs(normrnd(theta_curr(3),sqrt(theta_para_cov(3,3))));
+%           theta_prop(4) =abs(normrnd(theta_curr(4),sqrt(theta_para_cov(4,4))));
 
-      for i = 1:L
+      parfor i = 1:L
           [Pv, t] = sim_turin_matrix_gpu(N, B, Ns, theta_prop(1), theta_prop(2), theta_prop(3), theta_prop(4));
           s_sim(i,:) = create_statistics(Pv, t);
       end
       loglikelihoodnew = (synth_loglikelihood(s_obs,s_sim));
-
-      if exp(loglikelihoodnew-loglikelihood) > rand
+    
+    likeli = exp(loglikelihoodnew-loglikelihood);
+      if likeli >  rand 
 %        if r > rand
         loglikelihood = loglikelihoodnew;
           theta_curr = theta_prop;
           accept = accept+1
       end
-      thetas(:,j) = theta_curr'; 
+      thetas(:,j) = theta_curr';
+      likelihoods(j) = loglikelihoodnew;
   end   
   toc
+  
   %%
+  clear all
+  load("thetas_run7")
+  load("s_observed")
+ pd1 = fitdist(thetas(1,:)','Normal');
+ pd2 = fitdist(thetas(2,:)','Normal');
+ pd3 = fitdist(thetas(3,:)','Normal');
+ pd4 = fitdist(thetas(4,:)','Normal');
+ sigma1 = pd1.sigma;
+ sigma2 = pd2.sigma;
+ sigma3 = pd3.sigma;
+ sigma4 = pd4.sigma;
+ theta_curr(1) = pd1.mu;
+ theta_curr(2) = pd2.mu;
+ theta_curr(3) = pd3.mu;
+ theta_curr(4) = pd4.mu;
+ 
+ 
+ tic
+N = 200; % Number of Turin simulations
+B = 4e9; % Bandwidth of signal: 4 GHz
+Ns = 801;
+
+L = 10;
+s_sim = zeros(L,8); 
+parfor i = 1:L
+    [Pv, t] = sim_turin_matrix_gpu(N, B, Ns, theta_curr(1), theta_curr(2), theta_curr(3), theta_curr(4));
+    s_sim(i,:) = create_statistics(Pv, t);
+end
+    loglikelihood = synth_loglikelihood(s_obs,s_sim)/100
+
+%theta_para_cov = find_theta_cov;
+
+
+ clear thetas
+   accept = 0;
+   k = 500; % Number of MCMC steps
+   thetas= zeros(4,k);
+ likelihoods = zeros(1,N);
+   thetas(:,1) = theta_curr'
+   for j = 2:k
+       j
+       L = 10; % Numberof statistics vectors used per likelihood
+ 
+          % theta_prop = mvnrnd(theta_curr,theta_para_cov);
+ 
+       
+ 
+           theta_prop(1) =abs(normrnd(theta_curr(1),sigma1));
+           theta_prop(2) =abs(normrnd(theta_curr(2),sigma2));
+           theta_prop(3) =abs(normrnd(theta_curr(3),sigma3));
+           theta_prop(4) =abs(normrnd(theta_curr(4),sigma4));
+ 
+       parfor i = 1:L
+           [Pv, t] = sim_turin_matrix_gpu(N, B, Ns, theta_prop(1), theta_prop(2), theta_prop(3), theta_prop(4));
+           s_sim(i,:) = create_statistics(Pv, t);
+       end
+       loglikelihoodnew = (synth_loglikelihood(s_obs,s_sim));
+     
+     likeli = exp(loglikelihoodnew-loglikelihood);
+       if likeli >  rand 
+ %        if r > rand
+         loglikelihood = loglikelihoodnew;
+           theta_curr = theta_prop;
+           accept = accept+1
+       end
+       thetas(:,j) = theta_curr';
+       likelihoods(j) = likeli;
+   end   
+   toc
+ %%
     figure(2)
     tiledlayout(4,1)
     nexttile
@@ -190,22 +263,22 @@ y4 = pdf(pd4,x4);
 tiledlayout(4,1)
 
 nexttile
-histfit(thetas(1,1000:k),10)
+ksdensity(thetas(1,1000:k))
 xline(7.8e-9,'LineWidth',4)
 fitdist(thetas(1,1000:k)','Normal')
 %plot(x1,y1)
 
 nexttile
-histfit(thetas(2,1000:k),10)
+ksdensity(thetas(2,1000:k))
 xline(db2pow(-83.9),'LineWidth',4)
 % plot(x2,y2)
 
 nexttile
-histfit(thetas(3,1000:k),10)
+ksdensity(thetas(3,1000:k))
 xline(10e8,'LineWidth',4)
 % plot(x3,y3)
 
 nexttile
-histfit(thetas(4,1000:k),10)
+ksdensity(thetas(4,1000:k))
 xline(sqrt(0.28e-9),'LineWidth',4)
 % plot(x4,y4)

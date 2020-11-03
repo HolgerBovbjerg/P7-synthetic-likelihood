@@ -42,7 +42,7 @@ end
  % -------------------------------------------- %
   %     % MCMC part
   accept = 0;
-  k = 200; % Number of MCMC steps
+  k = 1500; % Number of MCMC steps
   thetas= zeros(4,k);
 likelihoods = zeros(1,N);
   thetas(:,1) = theta_curr'
@@ -50,14 +50,14 @@ likelihoods = zeros(1,N);
       j
       L = 10; % Numberof statistics vectors used per likelihood
 
-         % theta_prop = mvnrnd(theta_curr,theta_para_cov);
+          theta_prop = mvnrnd(theta_curr,theta_para_cov);
 
       
 
-          theta_prop(1) =abs(normrnd(theta_curr(1),sqrt(theta_para_cov(1,1))));
-          theta_prop(2) =abs(normrnd(theta_curr(2),sqrt(theta_para_cov(2,2))));
-          theta_prop(3) =abs(normrnd(theta_curr(3),sqrt(theta_para_cov(3,3))));
-          theta_prop(4) =abs(normrnd(theta_curr(4),sqrt(theta_para_cov(4,4))));
+%           theta_prop(1) =abs(normrnd(theta_curr(1),sqrt(theta_para_cov(1,1))));
+%           theta_prop(2) =abs(normrnd(theta_curr(2),sqrt(theta_para_cov(2,2))));
+%           theta_prop(3) =abs(normrnd(theta_curr(3),sqrt(theta_para_cov(3,3))));
+%           theta_prop(4) =abs(normrnd(theta_curr(4),sqrt(theta_para_cov(4,4))));
 
       parfor i = 1:L
           [Pv, t] = sim_turin_matrix_gpu(N, B, Ns, theta_prop(1), theta_prop(2), theta_prop(3), theta_prop(4));
@@ -77,22 +77,26 @@ likelihoods = zeros(1,N);
   end   
   toc
   %%
-  iters = 2;
-  values = [0 0 0 0]';
+   iters = 3;
+   %values = [0 0 0 0]';
+%   thetas = values(:,4001:5501);
+%   values = values(:,1:4001);
+  values = thetas;
+  %%
 for q = 1:iters
-    values = [values thetas];
-    pd1 = fitdist(thetas(1,:)','Normal');
-    pd2 = fitdist(thetas(2,:)','Normal');
-    pd3 = fitdist(thetas(3,:)','Normal');
-    pd4 = fitdist(thetas(4,:)','Normal');
+    
+    pd1 = fitdist(values(1,length(values)-1499:length(values))','Normal')
+    pd2 = fitdist(values(2,length(values)-1499:length(values))','Normal')
+    pd3 = fitdist(values(3,length(values)-1499:length(values))','Normal')
+    pd4 = fitdist(values(4,length(values)-1499:length(values))','Normal')
     sigma1 = pd1.sigma;
     sigma2 = pd2.sigma;
     sigma3 = pd3.sigma;
     sigma4 = pd4.sigma;
-    theta_curr(1) = pd1.mu;
-    theta_curr(2) = pd2.mu;
-    theta_curr(3) = pd3.mu;
-    theta_curr(4) = pd4.mu;
+%     theta_curr(1) = pd1.mu;
+%     theta_curr(2) = pd2.mu;
+%     theta_curr(3) = pd3.mu;
+%     theta_curr(4) = pd4.mu;
     
     
     tic
@@ -106,30 +110,30 @@ for q = 1:iters
         [Pv, t] = sim_turin_matrix_gpu(N, B, Ns, theta_curr(1), theta_curr(2), theta_curr(3), theta_curr(4));
         s_sim(i,:) = create_statistics(Pv, t);
     end
-    loglikelihood = synth_loglikelihood(s_obs,s_sim)/100
+    loglikelihood = synth_loglikelihood(s_obs,s_sim)
     
     %theta_para_cov = find_theta_cov;
     
     
     clear thetas
     accept = 0;
-    k = 200; % Number of MCMC steps
+    k = 1500; % Number of MCMC steps
     thetas= zeros(4,k);
     likelihoods = zeros(1,N);
-    thetas(:,1) = theta_curr'
+    %thetas(:,1) = theta_curr'
     for j = 2:k
         j
         L = 10; % Numberof statistics vectors used per likelihood
         
-        % theta_prop = mvnrnd(theta_curr,theta_para_cov);
+         theta_prop = abs(mvnrnd(theta_curr,theta_para_cov));
         
         
         
-        theta_prop(1) =abs(normrnd(theta_curr(1),sigma1));
-        theta_prop(2) =abs(normrnd(theta_curr(2),sigma2));
-        theta_prop(3) =abs(normrnd(theta_curr(3),sigma3));
-        theta_prop(4) =abs(normrnd(theta_curr(4),sigma4));
-        
+%         theta_prop(1) =abs(normrnd(theta_curr(1),sigma1));
+%         theta_prop(2) =abs(normrnd(theta_curr(2),sigma2));
+%         theta_prop(3) =abs(normrnd(theta_curr(3),sigma3));
+%         theta_prop(4) =abs(normrnd(theta_curr(4),sigma4));
+%         
         parfor i = 1:L
             [Pv, t] = sim_turin_matrix_gpu(N, B, Ns, theta_prop(1), theta_prop(2), theta_prop(3), theta_prop(4));
             s_sim(i,:) = create_statistics(Pv, t);
@@ -146,7 +150,9 @@ for q = 1:iters
         thetas(:,j) = theta_curr';
         likelihoods(j) = likeli;
     end
+    values = [values thetas];
 end
+values = [values thetas];
    toc
    
    %%
@@ -180,3 +186,36 @@ end
     yline(sqrt(0.28e-9))
     %ylim([1.0e-5 2.5e-5])
     title("\sigma")
+    
+    %%
+    figure(4)
+    tiledlayout(4,1)
+
+nexttile
+ksdensity(values(1,7000:length(values)))
+xline(7.8e-9,'LineWidth',4)
+xline(T,'LineWidth',4,'Color','blue')
+title("T")
+%fitdist(thetas(1,1000:k)','Normal')
+%plot(x1,y1)
+
+nexttile
+ksdensity(values(2,7000:length(values)))
+xline(db2pow(-83.9),'LineWidth',4)
+xline(G0,'LineWidth',4,'Color','blue')
+title("G0")
+% plot(x2,y2)
+
+nexttile
+ksdensity(values(3,7000:length(values)))
+xline(10e8,'LineWidth',4)
+xline(lambda,'LineWidth',4,'Color','blue')
+title("\lambda")
+% plot(x3,y3)
+
+nexttile
+ksdensity(values(4,7000:length(values)))
+xline(sqrt(0.28e-9),'LineWidth',4)
+xline(sigma_N,'LineWidth',4,'Color','blue')
+title("\sigma")
+% plot(x4,y4)

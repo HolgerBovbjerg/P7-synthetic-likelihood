@@ -2,8 +2,8 @@
 % 8 based upon N realizations from the Turin model. 
 % Each realization is generated from parameters drawn uniformly between the
 % limits given to the function. 
-function S = create_statistics(M,N, T, G0, lambda, sigma_N, B, Ns)
-    S = zeros(M,8);
+function S = create_statistics_new(M,N, T, G0, lambda, sigma_N, B, Ns)
+    S = zeros(M,16);
     for j = 1:M
         % Draw a realization from the Turin model based on input parameters
         [Pv, t] = sim_turin_matrix_gpu(N, B, Ns, T, G0, lambda, sigma_N);
@@ -28,5 +28,22 @@ function S = create_statistics(M,N, T, G0, lambda, sigma_N, B, Ns)
         S(j,6) = log(var(m1));             % Variance of 1st moment
         S(j,7) = log(var(m2));             % Variance of 2nd moment
         S(j,8) = log(var(m3));             % Variance of 3rd moment
+        
+        
+        S(j,9) = log(mean(m0kurt));            % Mean of 0th moment 
+        S(j,10) = log(mean(m1kurt));            % Mean of 1st moment
+        S(j,11) = log(mean(m2kurt));            % Mean of 2nd moment
+        S(j,12) = log(mean(m3kurt));            % Mean of 3rd moment
+        S(j,13) = log(var(m0kurt));             % Variance of 0th moment
+        S(j,14) = log(var(m1kurt));             % Variance of 1st moment
+        S(j,15) = log(var(m2kurt));             % Variance of 2nd moment
+        S(j,16) = log(var(m3kurt));             % Variance of 3rd moment
+        
+%         D2 = [m0 m1 m2 m3];
+%         D4 = [m0kurt m1kurt m2kurt m3kurt];
+%         mu2S = mean(D2);
+%         sigma2S = cov(D2);
+%         mu2S = mean(D4);
+%         sigma2S = cov(D4);
     end
 

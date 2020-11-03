@@ -32,7 +32,7 @@ lambdamin = 5e8;
 sigma_Nmax = sqrt(0.25e-10);
 sigma_Nmin = sqrt(0.25e-8);
 
-% Make guess from uniform distribution
+% Make first guess from uniform distribution
 T = Tmin + (Tmax - Tmin)*rand; % Reverberation time
 G0 = G0min + (G0max - G0min)*rand; % Reverberation gain converted from dB to power
 lambda = lambdamin + (lambdamax - lambdamin)*rand; % randomly chosen arrival rate per second lambda 
@@ -53,7 +53,7 @@ S_star = create_statistics(Nr, N, theta_guess(1), theta_guess(2), theta_guess(3)
 %% Generate first likelihood based on initial guess
 
 L_guess = synth_loglikelihood(S_measured, S_star);
-M = 1000; % Number of BSL posterior samples 
+M = 100; % Number of BSL posterior samples 
 theta = zeros(M,4); % Buffer for parameter values
 L = zeros(M,1); % Buffer for log likelihood values
 theta(1,:) = theta_guess; % First guess

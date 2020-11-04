@@ -1,3 +1,4 @@
+%%
 clear all
 N = 200; % Number of Turin simulations
 
@@ -9,7 +10,7 @@ sigma_N_true = sqrt(0.28e-9); % noise variance
 theta_true = [T_true G0_true lambda_true sigma_N_true];
 Ns = 801; % Number of sample points per Turin simulation
 B = 4e9; % Bandwidth of signal: 4 GHz
-
+%%
 [covariance theta_curr] = find_cov_prior;
 
 % -------------------------------------------- %
@@ -29,8 +30,8 @@ end
 loglikelihood = synth_loglikelihood(s_obs,s_sim)
 
 accept = 0;
-h = 1200;  % Number of MCMC steps
-k = 100;
+h = 10000;  % Number of MCMC steps
+k = 200;
 thetas = zeros(4,h+k);
 likelihoods = zeros(1,N);
 thetas(:,1) = theta_curr';
@@ -74,7 +75,7 @@ for j = k+1:h+k
     loglikelihoodnew = (synth_loglikelihood(s_obs,s_sim));
 
     likeli = exp(loglikelihoodnew-loglikelihood);
-    if likeli >  rand
+    if likeli >  rand 
       loglikelihood = loglikelihoodnew;
       theta_curr = theta_prop;
       accept = accept+1
@@ -84,21 +85,21 @@ end
   %%
 tiledlayout(4,1)
 nexttile
-plot(thetas(1,:),'o')
+plot(thetas(1,1:j),'o')
 yline(T_true)
 title("T")
 
 nexttile
-plot(thetas(2,:),'o')
+plot(thetas(2,1:j),'o')
 yline(G0_true)
 title("G0")
 
 nexttile
-plot(thetas(3,:),'o')
+plot(thetas(3,1:j),'o')
 yline(lambda_true)
 title("\lambda")
 
 nexttile
-plot(thetas(4,:),'o')
+plot(thetas(4,1:j),'o')
 yline(sigma_N_true)
 title("\sigma")

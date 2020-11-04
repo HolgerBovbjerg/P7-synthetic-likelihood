@@ -30,19 +30,21 @@ end
 loglikelihood = synth_loglikelihood(s_obs,s_sim)
 
 accept = 0;
-h = 120;
-k = 100; % Number of MCMC steps
-thetas= zeros(4,h);
+h = 1200;
+k = 1000; % Number of MCMC steps
+thetas= zeros(4,h+k);
 likelihoods = zeros(1,N);
 thetas(:,1) = theta_curr';
+ 
   for j = 2:k
       j
       L = 10; % Numberof statistics vectors used per likelihood
+      theta_prop = mvnrnd(theta_curr,covariance);
       while(any(theta_prop < 0))
         theta_prop = mvnrnd(theta_curr,covariance);
       end
 
-      for i = 1:L
+      parfor i = 1:L
           [Pv, t] = sim_turin_matrix_gpu(N, B, Ns, theta_prop(1), theta_prop(2), theta_prop(3), theta_prop(4));
           s_sim(i,:) = create_statistics(Pv, t);
       end
@@ -60,13 +62,14 @@ thetas(:,1) = theta_curr';
 
 %%
 
-  for j = k+1:h
+  for j = k+1:h+k
       j
       covariance = adaptive_cov(thetas(:,1:j-1),covariance,j-1);
+      theta_prop = mvnrnd(theta_curr,covariance);
       while(any(theta_prop < 0))
         theta_prop = mvnrnd(theta_curr,covariance);
       end
-      for i = 1:L
+      parfor i = 1:L
           [Pv, t] = sim_turin_matrix_gpu(N, B, Ns, theta_prop(1), theta_prop(2), theta_prop(3), theta_prop(4));
           s_sim(i,:) = create_statistics(Pv, t);
       end
@@ -80,3 +83,24 @@ thetas(:,1) = theta_curr';
       end
       thetas(:,j) = theta_curr';
   end
+  %%
+  tiledlayout(4,1)
+  nexttile
+  plot(thetas(1,:),'o')
+  yline(T_true)
+  title("T")
+  
+    nexttile
+  plot(thetas(2,:),'o')
+  yline(G0_true)
+  title("G0")
+  
+    nexttile
+  plot(thetas(3,:),'o')
+  yline(lambda_true)
+  title("\lambda")
+  
+    nexttile
+  plot(thetas(4,:),'o')
+  yline(sigma_N_true)
+  title("\sigma")

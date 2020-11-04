@@ -1,4 +1,9 @@
-function [P_y, t] = sim_turin_matrix_gpu(N, B, Ns, T, G0, lambda, sigma_N)
+function [P_y, t] = sim_turin_matrix_gpu(N, B, Ns, Theta)
+    T = Theta(1);
+    G0 = Theta(2);
+    lambda = Theta(3);
+    sigma_N = Theta(4); 
+    
     deltaf = B/(Ns-1); % Frequency seperation
     tmax = 1/deltaf; % Maximum delay, found from the bandwidth via frequency seperation
     t = (0:Ns-1)'./(deltaf*Ns); % Generate timestamps, in seconds

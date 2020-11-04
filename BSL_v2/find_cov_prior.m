@@ -1,5 +1,7 @@
 function [covariance thetacurr] = find_cov_prior()
-a = 9e-9; b = 2e-9,Nl = 20000;
+Nl = 20000;
+
+a = 9e-9; b = 2e-9;
 T_prior = a + (b-a).*rand(Nl,1);
 T = a + (b-a)*rand;
 

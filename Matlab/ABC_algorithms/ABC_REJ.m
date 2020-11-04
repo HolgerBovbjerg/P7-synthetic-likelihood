@@ -11,7 +11,8 @@ T_obs           = 7.8e-9;           % Reverberation time
 G0_obs          = db2pow(-83.9);    % linear gain 
 lambda_obs      = 10e9;             % arrival rate (1/s)    
 sigma_N_obs     = sqrt(0.28e-9);    % Noise std
-M = 1;                              % Number of summary statisctics realisations
+M = 200;                              % Number of summary statisctics realisations
+
 cd ../        % Change folder for accessing create statistics function
 cd statistics
 % Generate observed data summary statistics based on turin model and temporal moments
@@ -76,6 +77,7 @@ for a = 1:iterations
         % Mahalanobis distance see formular in document.
         d(i) = (S_simulated - mu_S_obs)/Sigma_S_obs * (S_simulated - mu_S_obs)';
         %d(i) = mahal(S_simulated, S_obs);
+        
         % Row 1 of the out vector contains the distance 
         % the rest of the rows contains the corresponding parameters 
         % used for generating that specific distance.    

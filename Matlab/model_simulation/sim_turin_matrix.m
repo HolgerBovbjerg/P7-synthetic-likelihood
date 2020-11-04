@@ -54,7 +54,7 @@ function [P_Y, t] = sim_turin_matrix(N, Bw, Ns, T, G0, lambda, sigma_N)
     P_y = abs(ifft(Yk,[],1)).^2;
     % We use P_Y = E_s * P_h + noise (Noise is already included in simulation)
     % E_s = energy of signal 
-    P_Y = Bw*P_y_mean;
+    P_Y = Bw*P_y;
     
 end
 

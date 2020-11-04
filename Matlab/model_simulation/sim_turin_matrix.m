@@ -52,13 +52,7 @@ function [P_Y, t] = sim_turin_matrix(N, Bw, Ns, T, G0, lambda, sigma_N)
     % of this, elementwise squared. P_y -> A definition from Ayush paper.
     % P_y is now the Power delay profile in the time domain
     P_y = abs(ifft(Yk,[],1)).^2;
-    % Averaging the power delay profile over the N realizations
-    % P_y_mean = column vector where each entry is the mean of each row in
-    % vector P_y
-    P_y_mean = mean(P_y,2); 
-    % We use P_Y = E_s * P_h + noise (Noise is already included in simulation)
-    % E_s = energy of signal 
-    P_Y = Bw*P_y_mean;
+    P_Y = P_y*Bw;
     
 end
 

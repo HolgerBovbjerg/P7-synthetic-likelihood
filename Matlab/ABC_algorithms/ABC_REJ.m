@@ -1,4 +1,5 @@
 %% ABC implementation 2 - ABC REJECTION ALGORITHM:
+% IMPORTANT NOTE: Need to be started with MATLAB in the folder ABC_algorithms to run withou errors
 clear
 %% --- Global turin model simulation parameters ---------------------------------------------------
 N  = 50;    % Number of different turin simulations.
@@ -10,12 +11,11 @@ T_obs           = 7.8e-9;           % Reverberation time
 G0_obs          = db2pow(-83.9);    % linear gain 
 lambda_obs      = 10e9;             % arrival rate (1/s)    
 sigma_N_obs     = sqrt(0.28e-9);    % Noise std
-M = 200;                              % Number of summary statisctics realisations
+M = 1;                              % Number of summary statisctics realisations
 cd ../        % Change folder for accessing create statistics function
 cd statistics
 % Generate observed data summary statistics based on turin model and temporal moments
-S_obs = create_statistics(M, N, Bw, Ns, 'matrix', T_obs , G0_obs,...
-    lambda_obs, sigma_N_obs);
+S_obs = create_statistics(M, N, Bw, Ns, 'matrix', T_obs , G0_obs, lambda_obs, sigma_N_obs);
 
 % load S_obs;   % uncomment to use
 
@@ -38,11 +38,11 @@ Sigma_S_obs = cov(S_obs);
 iterations = 3;
 
 % Number of summary statistics sets to generate  
-sumstat_iter = 2000;
+sumstat_iter = 10;
 
 % Extract this amount of parameter entries from each generated summary
 % statistic
-nbr_extract = 100;
+nbr_extract = 5;
 
 % Preallocation of vectors: 
 out = zeros(5,sumstat_iter);
@@ -68,13 +68,14 @@ for a = 1:iterations
         param_lambda = lambda_a + (lambda_b-lambda_a)*rand; % generate one random number within the given limits.
         % sigma_N (Variance noise floor)
         param_sigma_N = sigmaN_a + (sigmaN_b-sigmaN_a)*rand; % generate one random number within the given limits.
-       
+        cd ../        % Change folder for accessing create statistics function
+        cd statistics
         %% STEP 2: Simulate data using Turing model, based on parameters from STEP 1 and create statistics
-        S_simulated = create_statistics(1, N, param_T , param_G0, param_lambda, param_sigma_N, Bw, Ns);
+        S_simulated = create_statistics(1, N, Bw, Ns, 'matrix', param_T , param_G0, param_lambda, param_sigma_N);
         %% STEP 3: calculate the difference between observed and simulated summary statistics 
         % Mahalanobis distance see formular in document.
         d(i) = (S_simulated - mu_S_obs)/Sigma_S_obs * (S_simulated - mu_S_obs)';
-        
+        %d(i) = mahal(S_simulated, S_obs);
         % Row 1 of the out vector contains the distance 
         % the rest of the rows contains the corresponding parameters 
         % used for generating that specific distance.    
@@ -83,6 +84,7 @@ for a = 1:iterations
         out(3,i) =  param_G0;
         out(4,i) =  param_lambda;
         out(5,i) =  param_sigma_N;
+        
         disp(i);
     end 
     % Sort the "out" matrix so that the lowest euclidean distance is at the

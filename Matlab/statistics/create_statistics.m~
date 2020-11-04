@@ -3,7 +3,7 @@
 % Each realization is generated from parameters drawn uniformly between the
 % limits given to the function. 
 
-% INPUTS:
+% INPUTS
 % M = amount of summary statistic vectors
 % N = Number of turin simulations (for sim_turin function)
 % B = Bandwidth (for sim_turin function)
@@ -13,9 +13,6 @@
 % G0 = reverbaion gain
 % lambda = arrival rate
 % sigma_N = noise variance
-
-% OUTPUTS: 
-% S = summary statistics based on moment
 
 function S = create_statistics(M, N, B, Ns, version, T , G0,...
     lambda, sigma_N);

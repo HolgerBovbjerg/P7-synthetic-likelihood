@@ -6,6 +6,7 @@ Ns = 801;   % Number of time entries for each turin simulation.
 Bw = 4e9;   % Bandwidth (4Ghz).
 
 %% --- Generate "observed data" -----------------------------------------------------
+<<<<<<< Updated upstream
 param_T_obs       = 7.8e-9;  % Reverberation time
 param_G0_obs      = db2pow(-83.9);    % linear gain 
 param_lambda_obs  = 10e9;       % arrival rate (1/s)    
@@ -19,6 +20,23 @@ load S_obs;
 %%
 mu_S_obs = mean(S_obs);
 Sigma_S_obs = cov(S_obs);
+=======
+T_obs           = 7.8e-9;           % Reverberation time
+G0_obs          = db2pow(-83.9);    % linear gain 
+lambda_obs      = 10e9;             % arrival rate (1/s)    
+sigma_N_obs     = sqrt(0.28e-9);    % Noise std
+M = 200;                              % Number of summary statisctics realisations
+cd ../        % Change folder for accessing create statistics function
+cd statistics
+% Generate observed data summary statistics based on turin model and temporal moments
+S_obs = create_statistics(M, N, Bw, Ns, 'matrix', T_obs , G0_obs,...
+    lambda_obs, sigma_N_obs);
+
+% load S_obs;   % uncomment to use
+
+mu_S_obs = mean(S_obs);     % Mean of the mean and varaince of log(moments)?
+Sigma_S_obs = cov(S_obs);   
+>>>>>>> Stashed changes
 
 %% --- Initial max/min conditions for parameters (prior distribution) -----------------------------
 % a = min , b = max
@@ -94,7 +112,6 @@ for a = 1:iterations
     params_lambda(a,:)  = out(4,1:nbr_extract);
     params_sigma_N(a,:) = out(5,1:nbr_extract);
 
-    
    % Update the min/max values for the parameters for the next iteration 
    T_a      = min(params_T(a,:));
    T_b      = max(params_T(a,:));

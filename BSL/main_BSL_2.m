@@ -162,7 +162,7 @@ values = [values thetas];
    
    %%
    
-      figure(5)
+      figure(6)
     tiledlayout(4,1)
     nexttile
     

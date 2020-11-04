@@ -1,3 +1,4 @@
+%%
 clear all
 
 N = 200; % Number of Turin simulations
@@ -19,7 +20,7 @@ theta_para_cov = find_theta_cov;
 s_obs = create_statistics(Pv, t);
 
 % -------------------------------------------- %
-
+%%
 % Initial guess - first value of the chain 
 T =5.055e-9;
 tic
@@ -77,12 +78,16 @@ likelihoods = zeros(1,N);
   end   
   toc
   %%
-   iters = 3;
+   iters = 2;
    %values = [0 0 0 0]';
 %   thetas = values(:,4001:5501);
 %   values = values(:,1:4001);
-  values = thetas;
+ % values = thetas;
   %%
+  theta_curr(1) = values(1,end)
+  theta_curr(2) = values(2,end)
+  theta_curr(3) = values(3,end)
+  theta_curr(4) = values(4,end)
 for q = 1:iters
     
     pd1 = fitdist(values(1,length(values)-1499:length(values))','Normal')
@@ -129,11 +134,11 @@ for q = 1:iters
         
         
         
-%         theta_prop(1) =abs(normrnd(theta_curr(1),sigma1));
-%         theta_prop(2) =abs(normrnd(theta_curr(2),sigma2));
-%         theta_prop(3) =abs(normrnd(theta_curr(3),sigma3));
-%         theta_prop(4) =abs(normrnd(theta_curr(4),sigma4));
-%         
+         theta_prop(1) =abs(normrnd(theta_curr(1),sigma1));
+         theta_prop(2) =abs(normrnd(theta_curr(2),sigma2));
+         theta_prop(3) =abs(normrnd(theta_curr(3),sigma3));
+         theta_prop(4) =abs(normrnd(theta_curr(4),sigma4));
+         
         parfor i = 1:L
             [Pv, t] = sim_turin_matrix_gpu(N, B, Ns, theta_prop(1), theta_prop(2), theta_prop(3), theta_prop(4));
             s_sim(i,:) = create_statistics(Pv, t);

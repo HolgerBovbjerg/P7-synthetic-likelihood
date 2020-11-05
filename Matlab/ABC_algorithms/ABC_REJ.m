@@ -36,14 +36,14 @@ Sigma_S_obs = cov(S_obs);   % covariance matrix of all the summary statustic vec
  
 %% --- ABC rejection algorithm ---------------------------------------------------------------------
 % Set total iterations
-iterations = 3;
+iterations = 6;
 
 % Number of summary statistics sets to generate  
-sumstat_iter = 10;
+sumstat_iter = 20;
 
 % Extract this amount of parameter entries from each generated summary
 % statistic
-nbr_extract = 5;
+nbr_extract = 10;
 
 % Preallocation of vectors: 
 out = zeros(5,sumstat_iter);
@@ -76,7 +76,7 @@ for a = 1:iterations
         %% STEP 2: Simulate data using Turing model, based on parameters from STEP 1 and create statistics
         S_simulated = create_statistics(1, N, Bw, Ns, 'matrix', param_T , param_G0, param_lambda, param_sigma_N);
         %% STEP 3: calculate the difference between observed and simulated summary statistics 
-        % Mahalanobis distance see formular in document.
+        % Mahalanobis distance see formular in worksheet.
         d(i) = (S_simulated - mu_S_obs)/Sigma_S_obs * (S_simulated - mu_S_obs)';
         %d(i) = mahal(S_simulated, S_obs);
         
@@ -115,42 +115,52 @@ for a = 1:iterations
 end 
 toc
 
-% Plot distribution based on all estimated parameters
+% Plot distribution based after each iteration for G_0
 
-t = tiledlayout(2,2, 'TileSpacing', 'none', 'Padding', 'compact');
+t = tiledlayout(3,2, 'TileSpacing', 'none', 'Padding', 'compact');
 title(t,'Parameter estimation using ABC rejection algorithm for Turin model');
 
 nexttile
  % Plot the posterior distribution for the T parameter: 
- vect_T = params_T(:);
- [f2,x2] = ksdensity(vect_T);
- plot(x2,f2);
+ vect1 = params_G0(1,:);
+ [f1,x1] = ksdensity(vect1);
+ plot(x1,f1);
  xline(T_obs); % Original value
- title('T');
+ title('T_1');
 
 nexttile 
- % Plot the posterior distribution for the G_0 parameter: 
- vect_G0 = params_G0(:);
- [f1,x1] = ksdensity(vect_G0);
- plot(x1,f1);
- xline(G0_obs); % Original value
- title('G_0');
+ % Plot the posterior distribution for the T parameter: 
+ vect2 = params_G0(2,:);
+ [f2,x2] = ksdensity(vect2);
+ plot(x2,f2);
+ xline(T_obs); % Original value
+ title('T_2');
+ 
+nexttile 
+ % Plot the posterior distribution for the T parameter: 
+ vect3 = params_G0(3,:);
+ [f3,x3] = ksdensity(vect3);
+ plot(x3,f3);
+ xline(T_obs); % Original value
+ title('T_3');
+
+nexttile 
+ % Plot the posterior distribution for the T parameter: 
+ vect4 = params_G0(4,:);
+ [f4,x4] = ksdensity(vect4);
+ plot(x4,f4);
+ xline(T_obs); % Original value
+ title('T_4');
  
 nexttile
-% Plot the posterior distribution for the lambda parameter: 
- vect_lambda = params_lambda(:);
- [f3,x3] = ksdensity(vect_lambda);
- plot(x3,f3);
- xline(lambda_obs); % Original value
- title('\lambda');
+ % Plot the posterior distribution for the T parameter: 
+ vect5 = params_G0(5,:);
+ [f5,x5] = ksdensity(vect5);
+ plot(x5,f5);
+ xline(T_obs); % Original value
+ title('T_5');
+ 
 
-nexttile
-% Plot the posterior distribution for the sigma noise parameter: 
- vect_sigma_N = params_sigma_N(:);
- [f4,x4] = ksdensity(vect_sigma_N);
- plot(x4,f4);
- xline(sigma_N_obs); % Original value
- title('\sigma_n');
 
 
 

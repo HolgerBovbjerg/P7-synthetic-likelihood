@@ -53,9 +53,9 @@ end
 
 for kk = 1:blocks
     nexttile
-    [f x] = ksdensity(thetas(1,1+len/blocks*(kk-1):len/blocks*(kk)));
+    [f x] = ksdensity(thetas(4,1+len/blocks*(kk-1):len/blocks*(kk)));
     plot(x,f,'LineWidth',linesize*kslinesizefactor)
-    xline(sigma_true,'--','LineWidth',linesize)
+    xline(sigma_N_true,'--','LineWidth',linesize)
     xline(sigma_start,'LineWidth',linesize,'Color','blue')
    % xlim([0.2e-5 2e-5])
     title("\sigma")

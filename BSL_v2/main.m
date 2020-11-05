@@ -85,21 +85,21 @@ end
   %%
 tiledlayout(4,1)
 nexttile
-plot(thetas(1,:),'o')
+plot(thetas(1,1:j),'o')
 yline(T_true)
 title("T")
 
 nexttile
-plot(thetas(2,:),'o')
+plot(thetas(2,1:j),'o')
 yline(G0_true)
 title("G0")
 
 nexttile
-plot(thetas(3,:),'o')
+plot(thetas(3,1:j),'o')
 yline(lambda_true)
 title("\lambda")
 
 nexttile
-plot(thetas(4,:),'o')
+plot(thetas(4,1:j),'o')
 yline(sigma_N_true)
 title("\sigma")

@@ -3,23 +3,23 @@
 figure(1)
 blocks = 5;
 tiledlayout(4,blocks)
-len = length(thetas(1,1:1000));
+len = length(thetas(1,1:end));
 
 linesize = 2;
 kslinesizefactor = 1.5;
 
 
-T_true = 7.8e-9;
-T_start = T_true/1.2;
+% T_true = 7.8e-9;
+T_start = thetas(1,1);
 
-G0_true = 4.0738e-09;
-G0_start = G0_true/1.2;
+% G0_true = 4.0738e-09;
+G0_start = thetas(2,1);
 
-lambda_true = 10e8;
-lambda_start = lambda_true*1.2;
+% lambda_true = 10e8;
+lambda_start = thetas(3,1);
 
-sigma_true = 1.6733e-5;
-sigma_start = sigma_true*1.2;
+% sigma_true = 1.6733e-5;
+sigma_start = thetas(4,1);
 
 for kk = 1:blocks
     nexttile

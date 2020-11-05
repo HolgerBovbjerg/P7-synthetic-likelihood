@@ -12,6 +12,7 @@ Ns = 801; % Number of sample points per Turin simulation
 B = 4e9; % Bandwidth of signal: 4 GHz
 %%
 [covariance theta_curr] = find_cov_prior;
+theta_start = theta_curr;
 
 % -------------------------------------------- %
 % "Observed data for testing"
@@ -35,6 +36,10 @@ k = 200;
 thetas = zeros(4,h+k);
 likelihoods = zeros(1,N);
 thetas(:,1) = theta_curr';
+covs_T = zeros(1,h+k);
+covs_G0 = zeros(1,h+k);
+covs_lambda = zeros(1,h+k);
+covs_sigma = zeros(1,h+k);
 tic
 for j = 2:k
     j
@@ -42,7 +47,10 @@ for j = 2:k
     while(any(theta_prop < 0))
     theta_prop = mvnrnd(theta_curr,covariance);
     end
-
+covs_T(j) = covariance(1,1);
+covs_G0(j) = covariance(2,2);
+covs_lambda(j) = covariance(3,3);
+covs_sigma(j) = covariance(4,4);
     parfor i = 1:L
       [Pv, t] = sim_turin_matrix_gpu(N, B, Ns, theta_prop);
       s_sim(i,:) = create_statistics(Pv, t);
@@ -64,6 +72,10 @@ k=j
 for j = k+1:h+k
     j
     covariance = adaptive_cov(thetas(:,1:j-1),covariance,j-1);
+covs_T(j) = covariance(1,1);
+covs_G0(j) = covariance(2,2);
+covs_lambda(j) = covariance(3,3);
+covs_sigma(j) = covariance(4,4);
     theta_prop = mvnrnd(theta_curr,covariance);
     while(any(theta_prop < 0))
     theta_prop = mvnrnd(theta_curr,covariance);

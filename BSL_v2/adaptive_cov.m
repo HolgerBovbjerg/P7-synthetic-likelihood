@@ -1,5 +1,5 @@
 function covariance = adaptive_cov(thetas,C,n)
-    sd = 2.4^2/4;
+    sd = 2.4^2/40;
     epsilon = 0;
     mean_old = mean(thetas(:,1:end-1),2);
     mean_new = mean(thetas(:,1:end),2); 

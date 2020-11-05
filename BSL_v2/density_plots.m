@@ -1,6 +1,6 @@
 %%
 
-figure(1)
+figure(2)
 blocks = 5;
 tiledlayout(4,blocks)
 len = length(thetas(1,1:end));
@@ -27,7 +27,7 @@ for kk = 1:blocks
     plot(x,f,'LineWidth',linesize*kslinesizefactor)
     xline(T_true,'--','LineWidth',linesize)
     xline(T_start,'LineWidth',linesize,'Color','blue')
-    %xlim([4e-9 10e-9])
+    xlim([4e-9 9e-9])
     title("T")
 end
 
@@ -37,7 +37,7 @@ for kk = 1:blocks
     plot(x,f,'LineWidth',linesize*kslinesizefactor)
     xline(G0_true,'--','LineWidth',linesize)
     xline(G0_start,'LineWidth',linesize,'Color','blue')
-   % xlim([2e-9 8e-9])
+    xlim([3e-9 4.5e-9])
     title("G0")
 end
 
@@ -47,7 +47,7 @@ for kk = 1:blocks
     plot(x,f,'LineWidth',linesize*kslinesizefactor)
     xline(lambda_true,'--','LineWidth',linesize)
     xline(lambda_start,'LineWidth',linesize,'Color','blue')
-   % xlim([3e8 16e8])
+    xlim([6e8 14e8])
     title("\lambda")
 end
 
@@ -57,6 +57,6 @@ for kk = 1:blocks
     plot(x,f,'LineWidth',linesize*kslinesizefactor)
     xline(sigma_N_true,'--','LineWidth',linesize)
     xline(sigma_start,'LineWidth',linesize,'Color','blue')
-   % xlim([0.2e-5 2e-5])
+    xlim([0.7e-5 2.6e-5])
     title("\sigma")
 end

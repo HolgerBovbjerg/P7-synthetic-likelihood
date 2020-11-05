@@ -9,7 +9,7 @@ normalsigma = makedist("Normal","mu",theta_curr(4),"sigma",sqrt(covariance(4,4))
 yT = linspace(1e-8,1e-10,500);
 yG0 = linspace(db2pow(-85),db2pow(-81),500);
 ylambda = linspace(1e8,20e8,500);
-ysigma = linspace(sqrt(0.1e-9),sqrt(0.4e-9),500);
+ysigma = linspace(sqrt(0.1e-9),sqrt(0.6e-9),500);
 
 tiledlayout(4,1)
 nexttile

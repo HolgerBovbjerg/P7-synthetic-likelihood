@@ -1,10 +1,17 @@
 %%
 figure(4)
+% 
+% normalT = makedist("Normal","mu",theta_curr(1),"sigma",sqrt(covariance(1,1)))
+% normalG0 = makedist("Normal","mu",theta_curr(2),"sigma",sqrt(covariance(2,2)))
+% normallambda = makedist("Normal","mu",theta_curr(3),"sigma",sqrt(covariance(3,3)))
+% normalsigma = makedist("Normal","mu",theta_curr(4),"sigma",sqrt(covariance(4,4)))
 
-normalT = makedist("Normal","mu",theta_curr(1),"sigma",sqrt(covariance(1,1)))
-normalG0 = makedist("Normal","mu",theta_curr(2),"sigma",sqrt(covariance(2,2)))
-normallambda = makedist("Normal","mu",theta_curr(3),"sigma",sqrt(covariance(3,3)))
-normalsigma = makedist("Normal","mu",theta_curr(4),"sigma",sqrt(covariance(4,4)))
+
+normalT = makedist("Normal","mu",theta_curr(1),"sigma",sqrt(1.4089e-19))
+normalG0 = makedist("Normal","mu",theta_curr(2),"sigma",sqrt(4.2525e-20))
+normallambda = makedist("Normal","mu",theta_curr(3),"sigma",sqrt(9.2535e+15))
+normalsigma = makedist("Normal","mu",theta_curr(4),"sigma",sqrt(2.2392e-12))
+
 
 yT = linspace(1e-8,1e-10,500);
 yG0 = linspace(db2pow(-85),db2pow(-81),500);

@@ -11,24 +11,24 @@ T_obs           = 7.8e-9;           % Reverberation time
 G0_obs          = db2pow(-83.9);    % linear gain 
 lambda_obs      = 10e9;             % arrival rate (1/s)    
 sigma_N_obs     = sqrt(0.28e-9);    % Noise std
-M = 200;                              % Number of summary statisctics realisations
+M = 10;                             % Number of summary statisctics realisations
 
-cd ../        % Change folder for accessing create statistics function
+cd ../         % Change folder for accessing create statistics function
 cd statistics
 % Generate observed data summary statistics based on turin model and temporal moments
 S_obs = create_statistics(M, N, Bw, Ns, 'matrix', T_obs , G0_obs, lambda_obs, sigma_N_obs);
 
-% load S_obs;   % uncomment to use
+% load S_obs;   % Uncomment to use
 
-mu_S_obs = mean(S_obs);     % Mean of the mean and varaince of log(moments)?
-Sigma_S_obs = cov(S_obs);   
+mu_S_obs = mean(S_obs);     % Mean of all the summary statistic vector   
+Sigma_S_obs = cov(S_obs);   % covariance matrix of all the summary statustic vectors
 
 %% --- Initial max/min conditions for parameters (prior distribution) -----------------------------
-% a = min , b = max
+% a = min, b = max
  T_a = 15e-9; 
  T_b = 1e-9;  
- G0_a = db2pow(-70);    % Power gain (not in dB)
- G0_b = db2pow(-90);     % Power gain (not in dB)
+ G0_a = db2pow(-70);     % Power gain
+ G0_b = db2pow(-90);     % Power gain
  lambda_a = 20e8;
  lambda_b = 20e9;
  sigmaN_a = sqrt(0.5e-9); 
@@ -60,15 +60,17 @@ for a = 1:iterations
     out = zeros(5,sumstat_iter);
     d = zeros(sumstat_iter,1);
     for i = 1:sumstat_iter
-        %% STEP 1: Sample parameter from predefined prior distribution (uniform):      
+        %% STEP 1: Sample parameter from predefined prior distribution (uniform):   
+        % Generate random numbers within the given limits.
         % T (Reverberation time):
-        param_T = T_a + (T_b-T_a)*rand; % generate one random number
+        param_T = T_a + (T_b-T_a)*rand;
         % G0 (Reverberation gain)  
-        param_G0 = (G0_a + (G0_b-G0_a)*rand); % generate one random number within the given limits.
-        % lambda ()  
-        param_lambda = lambda_a + (lambda_b-lambda_a)*rand; % generate one random number within the given limits.
+        param_G0 = (G0_a + (G0_b-G0_a)*rand);
+        % lambda (Arrival rate)  
+        param_lambda = lambda_a + (lambda_b-lambda_a)*rand; 
         % sigma_N (Variance noise floor)
-        param_sigma_N = sigmaN_a + (sigmaN_b-sigmaN_a)*rand; % generate one random number within the given limits.
+        param_sigma_N = sigmaN_a + (sigmaN_b-sigmaN_a)*rand;
+        
         cd ../        % Change folder for accessing create statistics function
         cd statistics
         %% STEP 2: Simulate data using Turing model, based on parameters from STEP 1 and create statistics
@@ -112,36 +114,45 @@ for a = 1:iterations
    disp(a);
 end 
 toc
-   
-%{    
+
+% Plot distribution based on all estimated parameters
+
 t = tiledlayout(2,2, 'TileSpacing', 'none', 'Padding', 'compact');
 title(t,'Parameter estimation using ABC rejection algorithm for Turin model');
 
 nexttile
-scatter(x,params_T)
-yline(7.8e-9); % Parameter used for generating observed data 
-title('T - reverbation time ');
-xlabel('Accepted sample nbr.');
+ % Plot the posterior distribution for the T parameter: 
+ vect_T = params_T(:);
+ [f2,x2] = ksdensity(vect_T);
+ plot(x2,f2);
+ xline(T_obs); % Original value
+ title('T');
 
 nexttile 
-scatter(x,params_G0)
-yline(4.07e-9); % Parameter used for generating observed data 
-title('G_0 - reverbation gain');
-xlabel('Accepted sample nbr.');
+ % Plot the posterior distribution for the G_0 parameter: 
+ vect_G0 = params_G0(:);
+ [f1,x1] = ksdensity(vect_G0);
+ plot(x1,f1);
+ xline(G0_obs); % Original value
+ title('G_0');
+ 
+nexttile
+% Plot the posterior distribution for the lambda parameter: 
+ vect_lambda = params_lambda(:);
+ [f3,x3] = ksdensity(vect_lambda);
+ plot(x3,f3);
+ xline(lambda_obs); % Original value
+ title('\lambda');
 
 nexttile
-scatter(x,params_lambda)
-yline(10e-12); % Parameter used for generating observed data 
-title('\lambda - arrival rate');
-xlabel('Accepted sample nbr.');
+% Plot the posterior distribution for the sigma noise parameter: 
+ vect_sigma_N = params_sigma_N(:);
+ [f4,x4] = ksdensity(vect_sigma_N);
+ plot(x4,f4);
+ xline(sigma_N_obs); % Original value
+ title('\sigma_n');
 
-nexttile
-scatter(x,params_sigma_N)
-yline(1.673e-4); % Parameter used for generating observed data 
-title('\sigma_n - sigma noise');
-xlabel('Accepted sample nbr.');
 
-%}
 
 
  

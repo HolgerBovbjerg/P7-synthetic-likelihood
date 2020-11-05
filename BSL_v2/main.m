@@ -60,7 +60,7 @@ end
 toc
 
 %%
-
+k=j
 for j = k+1:h+k
     j
     covariance = adaptive_cov(thetas(:,1:j-1),covariance,j-1);
@@ -85,21 +85,21 @@ end
   %%
 tiledlayout(4,1)
 nexttile
-plot(thetas(1,1:j),'o')
+plot(thetas(1,:),'o')
 yline(T_true)
 title("T")
 
 nexttile
-plot(thetas(2,1:j),'o')
+plot(thetas(2,:),'o')
 yline(G0_true)
 title("G0")
 
 nexttile
-plot(thetas(3,1:j),'o')
+plot(thetas(3,:),'o')
 yline(lambda_true)
 title("\lambda")
 
 nexttile
-plot(thetas(4,1:j),'o')
+plot(thetas(4,:),'o')
 yline(sigma_N_true)
 title("\sigma")

@@ -4,7 +4,7 @@ B = 4e9; % Bandwidth of signal: 4 GHz
 Ns = 801; % Number of frequency samples in transfer function
 
 Nr = 100;    % Number of Turin realizations pr summary statistic vector
-Nl = 1500;   % Number of different summary statistic vectors generated
+Nl = 150;   % Number of different summary statistic vectors generated
 
 ss1 = zeros(3,Nl,4); % Matrix for summary statistics
 

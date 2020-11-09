@@ -11,7 +11,7 @@ T_obs           = 7.8e-9;           % Reverberation time
 G0_obs          = db2pow(-83.9);    % linear gain 
 lambda_obs      = 10e9;             % arrival rate (1/s)    
 sigma_N_obs     = sqrt(0.28e-9);    % Noise std
-M = 10;                             % Number of summary statisctics realisations
+M = 100;                             % Number of summary statisctics realisations
 
 cd ../         % Change folder for accessing create statistics function
 cd statistics
@@ -36,14 +36,14 @@ Sigma_S_obs = cov(S_obs);   % covariance matrix of all the summary statustic vec
  
 %% --- ABC rejection algorithm ---------------------------------------------------------------------
 % Set total iterations
-iterations = 6;
+iterations = 5;
 
 % Number of summary statistics sets to generate  
-sumstat_iter = 20;
+sumstat_iter = 50;
 
 % Extract this amount of parameter entries from each generated summary
 % statistic
-nbr_extract = 10;
+nbr_extract = 12;
 
 % Preallocation of vectors: 
 out = zeros(5,sumstat_iter);
@@ -117,7 +117,7 @@ toc
 
 % Plot distribution based after each iteration for G_0
 
-t = tiledlayout(3,2, 'TileSpacing', 'none', 'Padding', 'compact');
+t = tiledlayout(5,1, 'TileSpacing', 'none', 'Padding', 'compact');
 title(t,'Parameter estimation using ABC rejection algorithm for Turin model');
 
 nexttile

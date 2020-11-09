@@ -2,10 +2,12 @@
 
 figure(2)
 blocks = 5;
-tiledlayout(4,blocks)
-len = length(thetas(1,1:end));
+thetas_plot = thetas(:,3000:end);
+tt = tiledlayout(4,blocks)
+title(tt,"Density plots ")
+len = length(thetas_plot(1,1:end));
 
-linesize = 2;
+linesize = 1;
 kslinesizefactor = 1.5;
 
 
@@ -23,40 +25,67 @@ sigma_start = thetas(4,1);
 
 for kk = 1:blocks
     nexttile
-    [f x] = ksdensity(thetas(1,1+len/blocks*(kk-1):len/blocks*(kk)));
-    plot(x,f,'LineWidth',linesize*kslinesizefactor)
+    hold on
+    %[f x] = ksdensity(thetas(1,1+len/blocks*(kk-1):len/blocks*(kk)));
+    [f x] = ksdensity(thetas_plot(1,1:len/blocks*(kk)));
+    plot(x,f,'LineWidth',linesize,'Color','black')
+    [MAPest, index] = max(f);
+    MAPx = ones(100,1)*x(index);
+    MAPy = linspace(0,MAPest,100);
+    plot(MAPx,MAPy,'Color','red')
     xline(T_true,'--','LineWidth',linesize)
     xline(T_start,'LineWidth',linesize,'Color','blue')
-    xlim([4e-9 9e-9])
+    xlim([2e-9 9e-9])
     title("T")
 end
 
+legend( "Approx. posterior", "MAP estimate","True value", "Start value")
+
 for kk = 1:blocks
     nexttile
-    [f x] = ksdensity(thetas(2,1+len/blocks*(kk-1):len/blocks*(kk)));
-    plot(x,f,'LineWidth',linesize*kslinesizefactor)
+    hold on
+    %[f x] = ksdensity(thetas(2,1+len/blocks*(kk-1):len/blocks*(kk)));
+    [f x] = ksdensity(thetas_plot(2,1:len/blocks*(kk)));
+    [MAPest, index] = max(f);
+    MAPx = ones(100,1)*x(index);
+    MAPy = linspace(0,MAPest,100);
+    plot(MAPx,MAPy,'Color','red')
+    plot(x,f,'LineWidth',linesize,'Color','black')
     xline(G0_true,'--','LineWidth',linesize)
     xline(G0_start,'LineWidth',linesize,'Color','blue')
-    xlim([3e-9 4.5e-9])
-    title("G0")
+    xlim([db2pow(-85) db2pow(-82)])
+    title("G_0")
 end
 
 for kk = 1:blocks
     nexttile
-    [f x] = ksdensity(thetas(3,1+len/blocks*(kk-1):len/blocks*(kk)));
-    plot(x,f,'LineWidth',linesize*kslinesizefactor)
+    hold on
+    %[f x] = ksdensity(thetas(3,1+len/blocks*(kk-1):len/blocks*(kk)));
+    [f x] = ksdensity(thetas_plot(3,1:len/blocks*(kk)));
+        [MAPest, index] = max(f);
+    MAPx = ones(100,1)*x(index);
+    MAPy = linspace(0,MAPest,100);
+    plot(MAPx,MAPy,'Color','red')
+    plot(x,f,'LineWidth',linesize,'Color','black')
     xline(lambda_true,'--','LineWidth',linesize)
     xline(lambda_start,'LineWidth',linesize,'Color','blue')
-    xlim([6e8 14e8])
+    xlim([5e8 15e8])
     title("\lambda")
 end
 
 for kk = 1:blocks
     nexttile
-    [f x] = ksdensity(thetas(4,1+len/blocks*(kk-1):len/blocks*(kk)));
-    plot(x,f,'LineWidth',linesize*kslinesizefactor)
+    hold on
+    %[f x] = ksdensity(thetas(4,1+len/blocks*(kk-1):len/blocks*(kk)));
+    [f x] = ksdensity(thetas_plot(4,1:len/blocks*(kk)));
+        [MAPest, index] = max(f);
+    MAPx = ones(100,1)*x(index);
+    MAPy = linspace(0,MAPest,100);
+    plot(MAPx,MAPy,'Color','red')
+    plot(x,f,'LineWidth',linesize,'Color','black')
     xline(sigma_N_true,'--','LineWidth',linesize)
     xline(sigma_start,'LineWidth',linesize,'Color','blue')
-    xlim([0.7e-5 2.6e-5])
-    title("\sigma")
+    xlim([sqrt(0.1e-9) sqrt(0.5e-9)])
+    xlabel([num2str(round((len/blocks)*kk)),' steps'])
+    title("\sigma_N")
 end

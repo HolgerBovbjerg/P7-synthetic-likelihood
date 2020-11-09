@@ -9,7 +9,7 @@ Bw = 4e9;   % Bandwidth (4Ghz).
 param_T_obs       = 7.8e-9;  % Reverberation time
 param_G0_obs      = db2pow(-83.9);    % linear gain 
 param_lambda_obs  = 10e9;       % arrival rate (1/s)    
-param_sigma_N_obs       = sqrt(0.28e-9);   % Noise std
+param_sigma_N_obs = sqrt(0.28e-9);   % Noise std
 M = 200; %number of summary statisctics realisations
 
 % S_obs = create_statistics(M, N, param_T_obs , param_G0_obs,...
@@ -24,12 +24,12 @@ Sigma_S_obs = cov(S_obs);
 % a = min , b = max
  T_a = 1e-9; 
  T_b = 15e-9;  
- G0_a = db2pow(-90);    % Power gain (not in dB)
- G0_b = db2pow(-70);     % Power gain (not in dB)
+ G0_a = db2pow(pow2db(param_G0_obs) - 10);    % Power gain (not in dB)
+ G0_b = db2pow(pow2db(param_G0_obs) + 10);     % Power gain (not in dB)
  lambda_a = 1e8;
  lambda_b = 20e9;
- sigmaN_a = sqrt(0.5e-10); 
- sigmaN_b = sqrt(2e-9);
+ sigmaN_a = sqrt(0.28e-10); 
+ sigmaN_b = sqrt(0.28e-8);
  
 %% --- ABC rejection algorithm ---------------------------------------------------------------------
 % Set total iterations

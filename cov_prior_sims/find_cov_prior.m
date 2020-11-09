@@ -1,27 +1,17 @@
-function [covariance thetacurr] = find_cov_prior(param_G0_obs)
+function [covariance, thetacurr] = find_cov_prior(prior)
 Nl = 20000;
 
-T_min = 1e-9;
-T_max = 15e-9;
-T_prior = T_min + (T_max-T_min).*rand(Nl,1);
-T = T_min + (T_max-T_min)*rand;
+T_prior = prior(1,1) + (prior(1,2) - prior(1,1)).*rand(Nl,1);
 
-lambda_min = 1e8;
-lambda_max = 20e9;
-lambda_prior = lambda_min + (lambda_max-lambda_min).*rand(Nl,1);
-lambda = lambda_min + (lambda_max-lambda_min)*rand;
+G0_prior = prior(2,1) + (prior(2,2) - prior(2,1)).*rand(Nl,1);
 
+lambda_prior = prior(3,1) + (prior(3,2) - prior(3,1)).*rand(Nl,1);
 
-sigmaN_min = sqrt(0.28e-10);
-sigmaN_max = sqrt(0.28e-8);
-sigma_prior = sigmaN_min + (sigmaN_max-sigmaN_min).*rand(Nl,1);
-sigma = sigmaN_min + (sigmaN_max-sigmaN_min).*rand;
+sigmaN_prior = prior(4,1) + (prior(4,2) - prior(4,1)).*rand(Nl,1);
 
-G0_min = db2pow(pow2db(param_G0_obs) - 10);    % Power gain (not in dB)
-G0_max = db2pow(pow2db(param_G0_obs) + 10);     % Power gain (not in dB)
-G0prior = G0_min + (G0_max-G0_min).*rand(Nl,1);
-G0 = G0_min + (G0_max-G0_min).*rand;
+thetacurr = [T_prior(1) G0_prior(1) lambda_prior(1) sigmaN_prior(1)]';
+covariance = cov([T_prior G0_prior lambda_prior sigmaN_prior]);
 
-thetacurr = [T G0 lambda sigma]';
-covariance =eye(4) .* [var(T_prior) var(G0prior) var(lambda_prior) var(sigma_prior)];
+% Use this for independent parameters
+% covariance =eye(4) .* [var(T_prior) var(G0prior) var(lambda_prior) var(sigmaN_prior)];
 

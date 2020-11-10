@@ -12,10 +12,10 @@ function S = create_statistics(Pv, t)
     % t = gpuArray(t); % Time it and see if it is faster with. 
 
     % Calculate temporal moments with numerical integration
-    m0 = trapz(t,(Pv));         % 0th moment (t^0*Pv = Pv)
-    m1 = trapz(t,(t.^1.*Pv));   % 1st moment
-    m2 = trapz(t,(t.^2.*Pv));   % 2nd moment
-    m3 = trapz(t,(t.^3.*Pv));   % 3rd moment
+    m0_n2 = trapz(t,(Pv));           % 0th moment (t^0*Pv = Pv)
+    m1_n2 = trapz(t,(t.^1.*Pv));     % 1st moment
+    m0_n4 = trapz(t,(Pv).^2);         % 0th moment (t^0*Pv = Pv)
+    m1_n4 = trapz(t,(t.^1.*Pv.^2));   % 1st moment    
 
 %     % Calculate summary statistics from moments
 %     S(1) = mean(log(m0));            % Mean of 0th moment 
@@ -28,13 +28,13 @@ function S = create_statistics(Pv, t)
 %     S(8) = var(log(m3));             % Variance of 3rd moment
 %     
         % Calculate summary statistics from moments
-    S(1) = log(mean(m0));            % Mean of 0th moment 
-    S(2) = log(mean(m1));            % Mean of 1st moment
-    S(3) = log(mean(m2));            % Mean of 2nd moment
-    S(4) = log(mean(m3));            % Mean of 3rd moment
-    S(5) = log(var(m0));             % Variance of 0th moment
-    S(6) = log(var(m1));             % Variance of 1st moment
-    S(7) = log(var(m2));             % Variance of 2nd moment
-    S(8) = log(var(m3));             % Variance of 3rd moment
+    S(1) = log(mean(m0_n2));            % Mean of 0th moment 
+    S(2) = log(mean(m1_n2));            % Mean of 1st moment
+    S(3) = log(mean(m0_n4));            % Mean of 2nd moment
+    S(4) = log(mean(m1_n4));            % Mean of 3rd moment
+    S(5) = log(var(m0_n2));             % Variance of 0th moment
+    S(6) = log(var(m1_n2));             % Variance of 1st moment
+    S(7) = log(var(m0_n4));             % Variance of 2nd moment
+    S(8) = log(var(m1_n4));             % Variance of 3rd moment
 
 end

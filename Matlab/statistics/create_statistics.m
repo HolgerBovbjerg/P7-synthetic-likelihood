@@ -1,12 +1,21 @@
 % This function returns a matrix with M summary statistic vectors of length
-% 8 based upon N realizations from the Turin model. 
+% 8 from temporal moments based upon N realizations from the Turin model. 
 % Each realization is generated from parameters drawn uniformly between the
 % limits given to the function. 
-function S = create_statistics(M,N, T, G0, lambda, sigma_N, B, Ns)
+function S = create_statistics(M, N, B, Ns, version, T , G0,...
+    lambda, sigma_N);
+    
+    cd ../               % Change directory to access model_simulations function
+    cd model_simulation
     S = zeros(M,8);
     for j = 1:M
+        
         % Draw a realization from the Turin model based on input parameters
-        [Pv, t] = sim_turin_matrix_gpu(N, B, Ns, T, G0, lambda, sigma_N);
+        if version == 'matrix'
+            [Pv, t] = sim_turin_matrix(N, B, Ns, T, G0, lambda, sigma_N);
+        elseif version == 'gpu'
+            [Pv, t] = sim_turin_matrix_gpu(N, B, Ns, T, G0, lambda, sigma_N);
+        end
         
         % t = gpuArray(t); % Time it and see if it is faster with. 
         % Calculate temporal moments with numerical integration

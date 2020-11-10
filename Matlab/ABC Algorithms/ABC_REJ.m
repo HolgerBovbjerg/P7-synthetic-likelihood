@@ -16,8 +16,8 @@ M = 2000; %number of summary statisctics realisations
 % observed data
 load S_obs_w_kurt;
 %%
-mu_S_obs = mean(S_obs);
-Sigma_S_obs = cov(S_obs);
+mu_S_obs = mean(S_obs);     % Mean of the mean and varaince of log(moments)?
+Sigma_S_obs = cov(S_obs);   
 
 %% --- Initial max/min conditions for parameters (prior distribution) -----------------------------
 % a = min , b = max
@@ -145,7 +145,9 @@ for a = 2:iterations
         end
         
         %% STEP 2: Simulate data using Turing model, based on parameters from STEP 1 and create statistics
-        S_simulated = create_statistics(1, N, param_T , param_G0, param_lambda, param_sigma_N, Bw, Ns);
+        cd ../        % change folder for statistics function
+        cd statistics
+        S_simulated = create_statistics(1, N, Bw, Ns, 'matrix', param_T, param_G0, param_lambda, param_sigma_N);
         %% STEP 3: calculate the difference between observed and simulated summary statistics 
         % Mahalanobis distance see formular in document.
         d(i) = (S_simulated - mu_S_obs)/Sigma_S_obs * (S_simulated - mu_S_obs)';

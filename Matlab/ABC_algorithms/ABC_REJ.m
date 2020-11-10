@@ -17,7 +17,7 @@ sigma_N_obs     = sqrt(0.28e-9);    % Noise std
 M = 200;                            % Number of summary statisctics realisations
 
 cd ../         % Change folder for accessing create statistics function
-cd statistics
+cd statistics 
 % Generate observed data and summary statistics based on turin model and 0th to 2nd temporal moments
 S_obs = create_statistics(M, N, Bw, Ns, 'gpu', T_obs , G0_obs, lambda_obs, sigma_N_obs);
 
@@ -76,7 +76,7 @@ for a = 1:iterations
         cd ../          % Change folder for accessing create statistics function
         cd statistics
         %% STEP 2: Simulate data using Turing model, based on parameters from STEP 1 and create statistics
-        S_simulated = create_statistics(1, N, Bw, Ns, 'matrix', param_T , param_G0, param_lambda, param_sigma_N);
+        S_simulated = create_statistics(1, N, Bw, Ns, 'gpu', param_T , param_G0, param_lambda, param_sigma_N);
         %% STEP 3: calculate the difference between observed and simulated summary statistics 
         % Mahalanobis distance see formular in worksheet.
         d(i) = (S_simulated - mu_S_obs)/Sigma_S_obs * (S_simulated - mu_S_obs)';

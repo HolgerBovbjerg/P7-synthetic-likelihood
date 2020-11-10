@@ -26,10 +26,10 @@ function S = create_statistics(M, N, B, Ns, version, T , G0,...
     for j = 1:M
         
         % Draw a realization from the Turin model based on input parameters
-        if version == 'matrix'
-            [Pv, t] = sim_turin_matrix(N, B, Ns, T, G0, lambda, sigma_N);
-        elseif version == 'gpu'
+        if version == 'gpu'
             [Pv, t] = sim_turin_matrix_gpu(N, B, Ns, T, G0, lambda, sigma_N);
+        elseif version == 'matrix'
+            [Pv, t] = sim_turin_matrix(N, B, Ns, T, G0, lambda, sigma_N);
         end
         
         % t = gpuArray(t); % Time it and see if it is faster with. 

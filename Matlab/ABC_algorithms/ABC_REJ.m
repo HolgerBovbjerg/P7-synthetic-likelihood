@@ -1,3 +1,4 @@
+
 %% ABC implementation 2 - ABC REJECTION ALGORITHM:
 % IMPORTANT NOTE: Need to be started with MATLAB in the folder ABC_algorithms to run withou errors
 clear
@@ -6,55 +7,56 @@ N  = 50;    % Number of different turin simulations.
 Ns = 801;   % Number of time entries for each turin simulation. 
 Bw = 4e9;   % Bandwidth (4Ghz).
 
-%% --- Generate "observed data" -----------------------------------------------------
+%% --- Generate data used as "observed data" -----------------------------------------------------
+%% These parameter values can be considered the "original" values, the ones we want to aproximate and find a 
+%% distribution for using the ABC - Rejection algorithm
 T_obs           = 7.8e-9;           % Reverberation time
 G0_obs          = db2pow(-83.9);    % linear gain 
 lambda_obs      = 10e9;             % arrival rate (1/s)    
 sigma_N_obs     = sqrt(0.28e-9);    % Noise std
-M = 100;                             % Number of summary statisctics realisations
+M = 200;                            % Number of summary statisctics realisations
 
 cd ../         % Change folder for accessing create statistics function
 cd statistics
-% Generate observed data summary statistics based on turin model and temporal moments
-S_obs = create_statistics(M, N, Bw, Ns, 'matrix', T_obs , G0_obs, lambda_obs, sigma_N_obs);
+% Generate observed data and summary statistics based on turin model and 0th to 2nd temporal moments
+S_obs = create_statistics(M, N, Bw, Ns, 'gpu', T_obs , G0_obs, lambda_obs, sigma_N_obs);
 
-% load S_obs;   % Uncomment to use
-
-mu_S_obs = mean(S_obs);     % Mean of all the summary statistic vector   
-Sigma_S_obs = cov(S_obs);   % covariance matrix of all the summary statustic vectors
+mu_S_obs = mean(S_obs);     % Mean of all the summary statistic vectors   
+Sigma_S_obs = cov(S_obs);   % Covariance matrix of all the summary statistic vectors
 
 %% --- Initial max/min conditions for parameters (prior distribution) -----------------------------
 % a = min, b = max
- T_a = 15e-9; 
- T_b = 1e-9;  
- G0_a = db2pow(-70);     % Power gain
- G0_b = db2pow(-90);     % Power gain
- lambda_a = 20e8;
- lambda_b = 20e9;
- sigmaN_a = sqrt(0.5e-9); 
- sigmaN_b = sqrt(0.1e-9);
+T_a = 1e-9; 
+T_b = 30e-9;  
+G0_a = db2pow(-90);      % Power gain
+G0_b = db2pow(-70);      % Power gain
+lambda_a = 20e9;
+lambda_b = 20e8;
+sigmaN_a = sqrt(0.1e-9); 
+sigmaN_b = sqrt(0.7e-9);
  
 %% --- ABC rejection algorithm ---------------------------------------------------------------------
 % Set total iterations
 iterations = 5;
 
 % Number of summary statistics sets to generate  
-sumstat_iter = 50;
+sumstat_iter = 1000;
 
 % Extract this amount of parameter entries from each generated summary
 % statistic
-nbr_extract = 12;
+nbr_extract = 100;
 
 % Preallocation of vectors: 
 out = zeros(5,sumstat_iter);
 meanVar_params = zeros(8,iterations);
 
-params_T = zeros(iterations,nbr_extract);
-params_G0 = zeros(iterations,nbr_extract);
-params_lambda = zeros(iterations,nbr_extract);
-params_sigma_N = zeros(iterations,nbr_extract);
+params_T =          zeros(iterations,nbr_extract);
+params_G0 =         zeros(iterations,nbr_extract);
+params_lambda =     zeros(iterations,nbr_extract);
+params_sigma_N =    zeros(iterations,nbr_extract);
 
 disp('ABC algorithm computing, please wait... ')
+
 tic
 for a = 1:iterations 
     out = zeros(5,sumstat_iter);
@@ -71,7 +73,7 @@ for a = 1:iterations
         % sigma_N (Variance noise floor)
         param_sigma_N = sigmaN_a + (sigmaN_b-sigmaN_a)*rand;
         
-        cd ../        % Change folder for accessing create statistics function
+        cd ../          % Change folder for accessing create statistics function
         cd statistics
         %% STEP 2: Simulate data using Turing model, based on parameters from STEP 1 and create statistics
         S_simulated = create_statistics(1, N, Bw, Ns, 'matrix', param_T , param_G0, param_lambda, param_sigma_N);
@@ -111,8 +113,10 @@ for a = 1:iterations
    lambda_b = max(params_lambda(a,:));
    sigmaN_a = min(params_sigma_N(a,:));
    sigmaN_b = max(params_sigma_N(a,:));
-   disp(a);
+   
+   disp(a); % For counter in Command window 
 end 
+
 toc
 
 % Plot distribution based after each iteration for G_0
@@ -125,6 +129,7 @@ nexttile
  vect1 = params_G0(1,:);
  [f1,x1] = ksdensity(vect1);
  plot(x1,f1);
+ xlim([0 1e-7]);
  xline(G0_obs); % Original value
  title('T_1');
 
@@ -133,7 +138,9 @@ nexttile
  vect2 = params_G0(2,:);
  [f2,x2] = ksdensity(vect2);
  plot(x2,f2);
+ xlim([0 1e-7]);
  xline(G0_obs); % Original value
+ legend
  title('T_2');
  
 nexttile 
@@ -141,7 +148,9 @@ nexttile
  vect3 = params_G0(3,:);
  [f3,x3] = ksdensity(vect3);
  plot(x3,f3);
+ xlim([0 1e-7]);
  xline(G0_obs); % Original value
+ legend()
  title('T_3');
 
 nexttile 
@@ -149,7 +158,9 @@ nexttile
  vect4 = params_G0(4,:);
  [f4,x4] = ksdensity(vect4);
  plot(x4,f4);
+ xlim([0 1e-7]);
  xline(G0_obs); % Original value
+ legend
  title('T_4');
  
 nexttile
@@ -157,7 +168,9 @@ nexttile
  vect5 = params_G0(5,:);
  [f5,x5] = ksdensity(vect5);
  plot(x5,f5);
+ xlim([0 1e-7]);
  xline(G0_obs); % Original value
+ legend
  title('T_5');
  
 

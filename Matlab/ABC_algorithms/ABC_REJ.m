@@ -40,11 +40,11 @@ sigmaN_b = sqrt(0.7e-9);
 iterations = 5;
 
 % Number of summary statistics sets to generate  
-sumstat_iter = 1000;
+sumstat_iter = 2000;
 
 % Extract this amount of parameter entries from each generated summary
 % statistic
-nbr_extract = 100;
+nbr_extract = 200;
 
 % Preallocation of vectors: 
 out = zeros(5,sumstat_iter);

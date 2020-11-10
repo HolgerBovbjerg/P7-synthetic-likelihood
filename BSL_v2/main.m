@@ -13,7 +13,7 @@ B = 4e9; % Bandwidth of signal: 4 GHz
 %%
 [covariance theta_curr] = find_cov_prior;
 theta_start = theta_curr;
-
+the
 % -------------------------------------------- %
 % "Observed data for testing"
 

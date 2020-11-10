@@ -1,11 +1,11 @@
 %%
 
-figure(2)
-blocks = 1;
+figure(5)
+blocks = 5;
 thetas_plot = thetas(:,1:j);
 tt = tiledlayout(4,blocks)
 title(tt,"Density plots ")
-len = length(thetas_plot(1,1:end));
+len = length(thetas_plot(1,1:j));
 
 linesize = 1;
 kslinesizefactor = 1.5;
@@ -35,7 +35,8 @@ for kk = 1:blocks
     plot(MAPx,MAPy,'Color','red')
     xline(T_true,'--','LineWidth',linesize)
     xline(T_start,'LineWidth',linesize,'Color','blue')
-    xlim([0 2e-7])
+    xline(mean(thetas(1,:)))
+   % xlim([2e-9 9e-9])
     title("T")
 end
 
@@ -53,7 +54,8 @@ for kk = 1:blocks
     plot(x,f,'LineWidth',linesize,'Color','black')
     xline(G0_true,'--','LineWidth',linesize)
     xline(G0_start,'LineWidth',linesize,'Color','blue')
-    xlim([db2pow(-94) db2pow(-74)])
+    xline(mean(thetas(2,:)))
+   % xlim([db2pow(-85) db2pow(-82)])
     title("G_0")
 end
 
@@ -69,7 +71,8 @@ for kk = 1:blocks
     plot(x,f,'LineWidth',linesize,'Color','black')
     xline(lambda_true,'--','LineWidth',linesize)
     xline(lambda_start,'LineWidth',linesize,'Color','blue')
-    xlim([1e6 1e9])
+    xline(mean(thetas(3,:)))
+   % xlim([5e8 15e8])
     title("\lambda")
 end
 
@@ -85,7 +88,8 @@ for kk = 1:blocks
     plot(x,f,'LineWidth',linesize,'Color','black')
     xline(sigma_N_true,'--','LineWidth',linesize)
     xline(sigma_start,'LineWidth',linesize,'Color','blue')
-    xlim([sqrt(0.28e-10) sqrt(0.28e-8)])
+    xline(mean(thetas(4,:)))
+  %  xlim([sqrt(0.1e-9) sqrt(0.5e-9)])
     xlabel([num2str(round((len/blocks)*kk)),' steps'])
     title("\sigma_N")
 end

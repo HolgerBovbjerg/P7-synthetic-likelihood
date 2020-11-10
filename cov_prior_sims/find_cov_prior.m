@@ -14,4 +14,4 @@ covariance = cov([T_prior G0_prior lambda_prior sigmaN_prior]);
 
 % Use this for independent parameters
 % covariance =eye(4) .* [var(T_prior) var(G0prior) var(lambda_prior) var(sigmaN_prior)];
-
+end

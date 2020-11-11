@@ -23,11 +23,11 @@ S_obs = zeros(2000,4);
 
 parfor i = 1:2000
     [Pv, t] = sim_turin_matrix_gpu(N, Bw, Ns, theta_true);
-     S_obs(i,:) = create_statistics(Pv, t);
+    S_obs(i,:) = create_statistics(Pv, t);
 end
 %%
-mu_S_obs = mean(S_obs);     % Mean of the mean and varaince of log(moments)?
-Sigma_S_obs = cov(S_obs);   
+mu_S_obs = mean(S_obs);     % Mean of the summary statistics 
+Sigma_S_obs = cov(S_obs);     % Covariance of summary statistics
 
 %% --- Initial max/min conditions for parameters (prior distribution) -----------------------------
 % a = min , b = max

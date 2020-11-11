@@ -20,7 +20,7 @@ covariance = covariance*scale;
 [Pv, t] = sim_turin_matrix_gpu(10000, B, Ns, theta_true);
 s_obs = create_statistics(Pv, t);
 %%
-k = 20e3;    % Number of MCMC steps
+k = 20000;    % Number of MCMC steps
 L = 10;     % Numberof statistics vectors used per likelihood
 
 accept = 0;

@@ -7,7 +7,7 @@ Bw = 4e9;   % Bandwidth (4Ghz).
 
 %% --- Generate "observed data" -----------------------------------------------------
 % If theta already generated uncomment the following load 
-% load("Theta_true_values.mat") Else run the following block with set
+% load("Theta_true.mat") Else run the following block with set
 % paramerers
 
 T       = 7.8e-9;    
@@ -17,7 +17,7 @@ sigma_N = 1.673e-4;
 
 M = 2000; % Number of summary statisctics realisations
 
-theta_true = [T G0 lambda sigma_N];
+Theta_true = [T G0 lambda sigma_N];
 
 S_obs = zeros(2000,4);
 

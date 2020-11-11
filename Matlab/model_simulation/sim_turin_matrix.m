@@ -1,4 +1,4 @@
-function [P_y, t] = sim_turin_matrix(N, Bw, Ns, T, G0, Theta)
+function [P_y, t] = sim_turin_matrix(N, Bw, Ns, Theta)
 
     T = Theta(1);
     G0 = Theta(2);

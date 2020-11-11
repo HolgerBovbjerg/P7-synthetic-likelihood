@@ -1,4 +1,4 @@
-load Long_ass_ABC_simulering
+% load Long_ass_ABC_simulering
 
 %% True parameters
 param_T_obs       = 7.8e-9;  % Reverberation time
@@ -35,13 +35,14 @@ for i = 1:N
     [MAPest_val, index] = max(f);
     MAPline_xvals = ones(100,1)*xi(index);
     MAPline_yvals = linspace(0,MAPest_val,100);
-    plot(MAPline_xvals,MAPline_yvals,'r')
+    xline(xi(index),'r')
+%     plot(MAPline_xvals,MAPline_yvals,'r')
     
     % True value line
     TRUEline_xvals = ones(100,1)*pow2db(param_G0_obs);
     TRUEline_yvals = linspace(0,MAPest_val,100);
-    plot(TRUEline_xvals,TRUEline_yvals,'--g')
-    
+%     plot(TRUEline_xvals,TRUEline_yvals,'--g')
+    xline(pow2db(param_G0_obs),'--g')
     set(gca,'xtick',[])
     set(gca,'xticklabel',[])
     set(gca,'ytick',[])
@@ -64,13 +65,16 @@ for i = 1:N
     [MAPest_val, index] = max(f);
     MAPline_xvals = ones(100,1)*xi(index);
     MAPline_yvals = linspace(0,MAPest_val,100);
-    plot(MAPline_xvals,MAPline_yvals,'r')
+    xline(xi(index),'r')
+%     plot(MAPline_xvals,MAPline_yvals,'r')
     
     % True value line
     TRUEline_xvals = ones(100,1)*param_lambda_obs;
     TRUEline_yvals = linspace(0,MAPest_val,100);
-    plot(TRUEline_xvals,TRUEline_yvals,'--g')
-    
+%     plot(TRUEline_xvals,TRUEline_yvals,'--g')
+    xline(param_lambda_obs,'--g')
+
+
     set(gca,'xtick',[])
     set(gca,'xticklabel',[])
     set(gca,'ytick',[])
@@ -93,12 +97,15 @@ for i = 1:N
     [MAPest_val, index] = max(f);
     MAPline_xvals = ones(100,1)*xi(index);
     MAPline_yvals = linspace(0,MAPest_val,100);
-    plot(MAPline_xvals,MAPline_yvals,'r')
-    
+    xline(xi(index),'r')
+%     plot(MAPline_xvals,MAPline_yvals,'r')
+
+
     % True value line
     TRUEline_xvals = ones(100,1)*param_T_obs;
     TRUEline_yvals = linspace(0,MAPest_val,100);
-    plot(TRUEline_xvals,TRUEline_yvals,'--g')
+    xline(param_T_obs,'--g')
+%     plot(TRUEline_xvals,TRUEline_yvals,'--g')
     
     set(gca,'xtick',[])
     set(gca,'xticklabel',[])
@@ -122,12 +129,14 @@ for i = 1:N
     [MAPest_val, index] = max(f);
     MAPline_xvals = ones(100,1)*xi(index);
     MAPline_yvals = linspace(0,MAPest_val,100);
-    plot(MAPline_xvals,MAPline_yvals,'r')
+    xline(xi(index),'r')
+%     plot(MAPline_xvals,MAPline_yvals,'r')
     
     % True value line
     TRUEline_xvals = ones(100,1)*param_sigma_N_obs;
     TRUEline_yvals = linspace(0,MAPest_val,100);
-    plot(TRUEline_xvals,TRUEline_yvals,'--g')
+    xline(param_sigma_N_obs,'--g')
+%     plot(TRUEline_xvals,TRUEline_yvals,'--g')
     
     set(gca,'xtick',[])
     set(gca,'xticklabel',[])

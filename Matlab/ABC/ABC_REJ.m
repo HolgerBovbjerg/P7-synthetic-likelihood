@@ -6,23 +6,22 @@ Ns = 801;   % Number of time entries for each turin simulation.
 Bw = 4e9;   % Bandwidth (4Ghz).
 
 %% --- Generate "observed data" -----------------------------------------------------
-% If theta already generated uncomment the following load 
-% load("Theta_true.mat") Else run the following block with set
-% paramerers
 
-T       = 7.8e-9;    
-G0      = db2pow(-83.9);
-lambda  = 10e9;
-sigma_N = 1.673e-4;
+load("Theta_true_values.mat") 
+% If Theta_true_values.mat not generated - uncoment and run the following block:
 
-M = 2000; % Number of summary statisctics realisations
+% T       = 7.8e-9;    
+% G0      = db2pow(-83.9);
+% lambda  = 10e9;
+% sigma_N = 1.673e-4;
+% M = 2000; % Number of summary statisctics realisations
 
-Theta_true = [T G0 lambda sigma_N];
+% Theta_true_values = [T G0 lambda sigma_N];
 
 S_obs = zeros(2000,4);
 
 parfor i = 1:2000
-    [Pv, t] = sim_turin_matrix_gpu(N, Bw, Ns, theta_true);
+    [Pv, t] = sim_turin_matrix_gpu(N, Bw, Ns, Theta_true_values);
     S_obs(i,:) = create_statistics(Pv, t);
 end
 %%

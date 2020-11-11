@@ -9,9 +9,9 @@ B = 4e9; % Bandwidth of signal: 4 GHz
 %%
 [covariance, theta_curr] = find_cov_prior(prior);
 theta_start = theta_curr;
-load("covariance_large_prior.mat");
+load("Covariance_large_prior.mat");
 
-scale = 0.01;
+scale = 1/1000;
 covariance = covariance*scale;
 %%
 % "Observed data for testing"

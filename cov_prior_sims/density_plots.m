@@ -40,7 +40,7 @@ for kk = 1:blocks
     title("T")
 end
 
-legend( "Approx. posterior", "MAP estimate","True value", "Start value")
+legend( "Approx. posterior", "MAP estimate","True value", "Start value","Mean")
 
 for kk = 1:blocks
     nexttile

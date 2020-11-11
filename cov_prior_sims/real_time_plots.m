@@ -31,7 +31,7 @@ ylabel("Magnitude")
 title("\sigma")
 
 pause(.00000001);
-if j ~=k
+if j ~=k-1
     delete(ttt)
 end
 void = 0;

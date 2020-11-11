@@ -1,4 +1,12 @@
 function [P_y, t] = sim_turin_matrix_gpu(N, B, Ns, Theta)
+    %  N       = Number of simulation iterations (The number of complete turin realizations)
+    %  Bw      = Bandwidth 
+    %  Ns      = Number of simulation iterations (The number of Hk realizations used) 
+    %  T       = Reverberation time 
+    %  G0      = Reverberation gain (power at delay zero)
+    %  lambda  = Arrival rate of multipath components
+    %  sigma_N = Noise variance
+    
     T = Theta(1);
     G0 = Theta(2);
     lambda = Theta(3);

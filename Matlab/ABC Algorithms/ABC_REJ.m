@@ -194,8 +194,3 @@ for a = 2:iterations
    disp(a);
 end 
 toc
-   
-
-
-
- 

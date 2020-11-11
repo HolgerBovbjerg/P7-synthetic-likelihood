@@ -4,18 +4,27 @@ clear
 N  = 50;    % Number of different turin simulations.
 Ns = 801;   % Number of time entries for each turin simulation. 
 Bw = 4e9;   % Bandwidth (4Ghz).
-load("Theta_true_values.mat")
 
 %% --- Generate "observed data" -----------------------------------------------------
-M = 2000; %number of summary statisctics realisations
+% If theta already generated uncomment the following load 
+% load("Theta_true_values.mat") Else run the following block with set
+% paramerers
+
+T       = 7.8e-9;    
+G0      = db2pow(-83.9);
+lambda  = 10e9;
+sigma_N = 1.673e-4;
+
+M = 2000; % Number of summary statisctics realisations
+
+theta_true = [T G0 lambda sigma_N];
 
 S_obs = zeros(2000,4);
 
 parfor i = 1:2000
     [Pv, t] = sim_turin_matrix_gpu(N, Bw, Ns, theta_true);
-    S_obs(i,:) = create_statistics(Pv, t);
+     S_obs(i,:) = create_statistics(Pv, t);
 end
-
 %%
 mu_S_obs = mean(S_obs);     % Mean of the mean and varaince of log(moments)?
 Sigma_S_obs = cov(S_obs);   
@@ -65,6 +74,7 @@ parfor i = 1:sumstat_iter
     param_sigma_N = sigmaN_min + (sigmaN_max-sigmaN_min)*rand; % generate one random number within the given limits.
 
     theta_curr = [param_T param_G0 param_lambda param_sigma_N];
+    
     %% STEP 2: Simulate data using Turing model, based on parameters from STEP 1 and create statistics
     [Pv, t] = sim_turin_matrix_gpu(N, Bw, Ns, theta_curr);
     S_simulated = create_statistics(Pv, t);
@@ -92,7 +102,6 @@ params_T(1,:)       = out(2,1:nbr_extract);
 params_G0(1,:)      = out(3,1:nbr_extract);
 params_lambda(1,:)  = out(4,1:nbr_extract);
 params_sigma_N(1,:) = out(5,1:nbr_extract);
-
 
 % Update the prior for the next iteration
 % [f_T,xi_T] = ksdensity(params_T(1,:));

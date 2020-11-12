@@ -25,8 +25,6 @@ lambda_start = thetas(3,1);
 sigma_N_true = theta_true(4);
 sigma_start = thetas(4,1);
 
-prior = prior_very_small;
-
 for kk = 1:blocks
     nexttile
     hold on

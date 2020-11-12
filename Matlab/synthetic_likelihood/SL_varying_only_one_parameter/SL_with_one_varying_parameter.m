@@ -23,11 +23,11 @@ for j = 1:steps
     %     lambda = lambdas(j);
     %         T = Ts(j);
     sigma = sigmas(j);
-    %     G0 = G0s(j);
+    %     G0 = G0s(j)
     parfor i = 1:L
-        %         theta_prop = [theta_true(1) theta_true(2) lambda theta_true(4)];
-        theta_prop = [theta_true(1) theta_true(2) theta_true(3) sigma];
-        %         theta_prop = [theta_true(1) G0 theta_true(3) theta_true(4)];
+        theta_prop = [theta_true(1) theta_true(2) theta_true(4) theta_true(4)];
+%         theta_prop = [theta_true(1) theta_true(2) lambda theta_true(4)];
+%         theta_prop = [T theta_true(2) theta_true(3) theta_true(4)];
         [Pv, t] = sim_turin_matrix_gpu(N, B, Ns, theta_prop);
         s_sim(i,:) = create_statistics(Pv, t);
     end

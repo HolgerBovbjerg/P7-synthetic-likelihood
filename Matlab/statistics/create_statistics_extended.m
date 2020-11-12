@@ -1,4 +1,4 @@
-function S = create_statistics_big(Pv, t)
+function S = create_statistics_extended(Pv, t)
     S = zeros(1,16);
     % Calculate temporal moments with numerical integration
     m0 = trapz(t,Pv);         % 0th second order moment (t^0*Pv = Pv)
@@ -26,5 +26,5 @@ function S = create_statistics_big(Pv, t)
     log(var(m0kurt));...             % Ln of Variance of 0th moment
     log(var(m1kurt));...             % Ln of Variance of 1st moment
     log(var(m2kurt));...             % Ln of Variance of 0th moment
-    log(var(m13kurt))];             % Ln of Variance of 1st moment
+    log(var(m3kurt))];             % Ln of Variance of 1st moment
 end

@@ -21,12 +21,13 @@ loglikelihood = zeros(steps,1);
 tic
 for j = 1:steps
 %     lambda = lambdas(j);
-    T = Ts(j);
+%     T = Ts(j);
     parfor i = 1:L
+        theta_prop = [theta_true(1) theta_true(2) theta_true(4) theta_true(4)];
 %         theta_prop = [theta_true(1) theta_true(2) lambda theta_true(4)];
-        theta_prop = [T theta_true(2) theta_true(3) theta_true(4)];
+%         theta_prop = [T theta_true(2) theta_true(3) theta_true(4)];
         [Pv, t] = sim_turin_matrix_gpu(N, B, Ns, theta_prop);
-        s_sim(i,:) = create_statistics(Pv, t);
+        s_sim(i,:) = create_statistics_big(Pv, t);
     end
     loglikelihood(j) = (synth_loglikelihood(s_obs,s_sim));
     j

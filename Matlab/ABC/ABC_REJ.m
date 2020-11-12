@@ -202,4 +202,5 @@ for a = 2:iterations
    sigmaN_max = max(params_sigma_N(a,:));
    disp(a);
 end 
+disp('ABC algorithm finished... ')
 toc

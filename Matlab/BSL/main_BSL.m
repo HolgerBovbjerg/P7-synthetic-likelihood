@@ -9,28 +9,24 @@ B = 4e9; % Bandwidth of signal: 4 GHz
 %%
 [covariance, theta_curr] = find_cov_prior(prior);
 theta_start = theta_curr;
-load("covariance_large_prior.mat");
 
 scale = 1;
 covariance = covariance*scale;
 %%
 % "Observed data for testing"
-% load('S_obs_true.mat')
-
-[Pv, t] = sim_turin_matrix_gpu(10000, B, Ns, theta_true);
-s_obs = create_statistics(Pv, t);
+load('S_obs_9_stats.mat')
 %%
 k = 20000;    % Number of MCMC steps
 L = 500;     % Numberof statistics vectors used per likelihood
 
 accept = 0;
-s_sim = zeros(L,4);
+s_sim = zeros(L,9);
 thetas = zeros(4,k);
 thetas(:,1) = theta_curr';
 
 parfor i = 1:L
     [Pv, t] = sim_turin_matrix_gpu(N, B, Ns, theta_curr);
-    s_sim(i,:) = create_statistics	(Pv, t);
+    s_sim(i,:) = create_statistics(Pv, t);
 end
 
 loglikelihood = synth_loglikelihood(s_obs,s_sim);

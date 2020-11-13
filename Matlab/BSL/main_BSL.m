@@ -8,6 +8,7 @@ Ns = 801; % Number of sample points per Turin simulation
 B = 4e9; % Bandwidth of signal: 4 GHz
 %% Find first proposed Theta and covariance for proposal distribution
 [covariance, theta_curr] = find_cov_prior(prior);
+
 theta_start = theta_curr;
 load('covariance_medium_prior.mat')
 
@@ -51,5 +52,5 @@ for j = 2:k
     end
     thetas(:,j) = theta_curr';
     
-    real_time_plots(theta_true,thetas,j-1,accept,k,prior);
+    real_time_plots(theta_true,thetas,j-1,accept,k,prior,theta_prop,loglikelihoodnew,loglikelihood);
 end

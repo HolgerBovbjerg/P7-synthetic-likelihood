@@ -6,14 +6,12 @@ load('Theta_true_values.mat')
 N = 300; % Number of Turin simulations
 Ns = 801; % Number of sample points per Turin simulation
 B = 4e9; % Bandwidth of signal: 4 GHz
-%%
+%% Find first proposed Theta and covariance for proposal distribution
 [covariance, theta_curr] = find_cov_prior(prior);
 theta_start = theta_curr;
+load('covariance_medium_prior.mat')
 
-scale = 1;
-covariance = covariance*scale;
-%%
-% "Observed data for testing"
+%% "Observed data for testing"
 load('S_obs_9_stats.mat')
 %%
 k = 20000;    % Number of MCMC steps

@@ -14,7 +14,7 @@ title("T")
 nexttile
 hold on
 plot(pow2db(thetas(2,1:j)),'o')
-plot(j,prop(2),'r*','Markersize',24)
+plot(j,pow2db(prop(2)),'r*','Markersize',24)
 ylim([pow2db(prior(2,1)) pow2db(prior(2,2))])
 yline(pow2db(theta_true(2)))
 ylabel("dB")

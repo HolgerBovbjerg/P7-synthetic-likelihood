@@ -9,7 +9,7 @@ B = 4e9; % Bandwidth of signal: 4 GHz
 %% Find first proposed Theta and covariance for proposal distribution
 [covariance, theta_curr] = find_cov_prior(prior);
 theta_start = theta_curr;
-load('covariance_medium_prior.mat')
+load('covariance_large_prior.mat')
 
 %% "Observed data for testing"
 load('S_obs_9_stats.mat')

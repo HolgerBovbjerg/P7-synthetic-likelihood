@@ -40,7 +40,7 @@ for j = 1:steps
     loglikelihood(j) = (synth_loglikelihood(s_obs,s_sim));
     j
 end
-toc
+time = toc
 
 % %%
 % figure(1)

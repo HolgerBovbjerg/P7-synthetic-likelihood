@@ -18,19 +18,19 @@ covariance = covariance*scale;
 % load('S_obs_true.mat')
 
 [Pv, t] = sim_turin_matrix_gpu(1000, B, Ns, theta_true);
-s_obs = create_statistics_big(Pv, t);
+s_obs = create_statistics_new(Pv, t);
 %%
 k = 2000;    % Number of MCMC steps
 L = 200;     % Numberof statistics vectors used per likelihood
 
 accept = 0;
-s_sim = zeros(L,4);
+s_sim = zeros(L,18);
 thetas = zeros(4,k);
 thetas(:,1) = theta_curr';
 
 parfor i = 1:L
     [Pv, t] = sim_turin_matrix_gpu(N, B, Ns, theta_curr);
-    s_sim(i,:) = create_statistics_big(Pv, t);
+    s_sim(i,:) = create_statistics_new(Pv, t);
 end
 
 loglikelihood = synth_loglikelihood(s_obs,s_sim);
@@ -46,7 +46,7 @@ for j = 2:k
     
     parfor i = 1:L
         [Pv, t] = sim_turin_matrix_gpu(N, B, Ns, theta_prop);
-        s_sim(i,:) = create_statistics_big(Pv, t);
+        s_sim(i,:) = create_statistics_new(Pv, t);
     end
     loglikelihoodnew = (synth_loglikelihood(s_obs,s_sim));
     

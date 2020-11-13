@@ -30,7 +30,7 @@ thetas(:,1) = theta_curr';
 
 parfor i = 1:L
     [Pv, t] = sim_turin_matrix_gpu(N, B, Ns, theta_curr);
-    s_sim(i,:) = create_statistics(Pv, t);
+    s_sim(i,:) = create_statistics	(Pv, t);
 end
 
 loglikelihood = synth_loglikelihood(s_obs,s_sim);

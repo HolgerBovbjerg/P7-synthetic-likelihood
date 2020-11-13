@@ -21,7 +21,7 @@ function [P_y, t] = sim_turin_matrix_gpu(N, B, Ns, Theta)
     H_k = gpuArray(zeros(Ns,N)); % buffer for generated channel response data                                             
     % We run the simulation N times, creating new data sets for each
     % realization. 
-    for n = 1:N
+    parfor n = 1:N
         lmax = poissrnd(tmax*lambda);   % Number of multipath components, created from the Poisson distribution.
         tau = gpuArray(rand(lmax,1)*tmax);    % time-delays, drawn uniformly between 0 and the maximum delay.  
         % For every multipath component a complex gain is generated, based on a

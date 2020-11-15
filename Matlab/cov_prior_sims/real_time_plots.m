@@ -1,7 +1,7 @@
 function void = real_time_plots(theta_true, thetas, j, accept, k, prior,prop,likelihood,bestlikelihood)
 
 ttt = tiledlayout(4,1);
-title(ttt,['Number of steps: ',num2str(j),'  Acceptance rate: ',num2str(accept/j), ' Current likelihood: ', num2str(likelihood), ' Best likelihood: ', num2str(bestlikelihood) ])
+title(ttt,['Number of steps: ',num2str(j),'  Acceptance rate: ',num2str(accept/j), ' Current likelihood: ', num2str(likelihood), ' Best likelihood: ', num2str(bestlikelihood),' Probability to accept: ', num2str(exp(likelihood-bestlikelihood)) ])
 nexttile
 hold on
 plot(thetas(1,1:j),'o')

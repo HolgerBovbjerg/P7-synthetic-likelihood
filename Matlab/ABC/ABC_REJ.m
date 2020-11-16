@@ -1,7 +1,7 @@
 %% ABC implementation 2 - ABC REJECTION ALGORITHM:
 clear
 %% --- Global turin model simulation parameters ---------------------------------------------------
-N  = 50;    % Number of different turin simulations.
+N  = 300;    % Number of different turin simulations.
 Ns = 801;   % Number of time entries for each turin simulation. 
 Bw = 4e9;   % Bandwidth (4Ghz).
 
@@ -18,7 +18,7 @@ load("Theta_true_values.mat")
 
 % Theta_true_values = [T G0 lambda sigma_N];
 
-S_obs = zeros(2000,4);
+S_obs = zeros(2000,9);
 
 parfor i = 1:2000
     [Pv, t] = sim_turin_matrix_gpu(N, Bw, Ns, theta_true);
@@ -29,15 +29,7 @@ mu_S_obs = mean(S_obs);     % Mean of the summary statistics
 Sigma_S_obs = cov(S_obs);     % Covariance of summary statistics
 
 %% --- Initial max/min conditions for parameters (prior distribution) -----------------------------
-% a = min , b = max
- T_min = 1e-9; 
- T_max = 15e-9;  
- G0_min = db2pow(pow2db(theta_true(2)) - 10);    % Power gain (not in dB)
- G0_max = db2pow(pow2db(theta_true(2)) + 10);     % Power gain (not in dB)
- lambda_min = 1e8;
- lambda_max = 20e9;
- sigmaN_min = sqrt(0.28e-10); 
- sigmaN_max = sqrt(0.28e-8);
+load('Prior_data_large_prior_min_max_values.mat')
  
 %% --- ABC rejection algorithm ---------------------------------------------------------------------
 % Set total iterations
@@ -64,13 +56,13 @@ d = zeros(sumstat_iter,1);
 parfor i = 1:sumstat_iter
     %% STEP 1: Sample parameter from predefined prior distribution (uniform):      
     % T (Reverberation time):
-    param_T = T_min + (T_max-T_min)*rand; % generate one random number
+    param_T = prior(1,1) + (prior(1,2) - prior(1,1)).*rand; % generate one random number
     % G0 (Reverberation gain)  
-    param_G0 = (G0_min + (G0_max-G0_min)*rand); % generate one random number within the given limits.
+    param_G0 = prior(2,1) + (prior(2,2) - prior(2,1)).*rand; % generate one random number within the given limits.
     % lambda ()  
-    param_lambda = lambda_min + (lambda_max-lambda_min)*rand; % generate one random number within the given limits.
+    param_lambda = prior(3,1) + (prior(3,2) - prior(3,1)).*rand; % generate one random number within the given limits.
     % sigma_N (Variance noise floor)
-    param_sigma_N = sigmaN_min + (sigmaN_max-sigmaN_min)*rand; % generate one random number within the given limits.
+    param_sigma_N = prior(4,1) + (prior(4,2) - prior(4,1)).*rand; % generate one random number within the given limits.
 
     theta_curr = [param_T param_G0 param_lambda param_sigma_N];
     
@@ -113,49 +105,23 @@ for a = 2:iterations
     d = zeros(sumstat_iter,1);
     parfor i = 1:sumstat_iter
         %% STEP 1: Sample parameter from predefined prior distribution (uniform):      
-%         % T (Reverberation time):
-%         param_T = randpdf(f_T,xi_T,[1, 1]); % generate one random number
-%         % G0 (Reverberation gain)  
-%         param_G0 = randpdf(f_G0,xi_G0,[1, 1]); % generate one random number within the given limits.
-%         % lambda ()  
-%         param_lambda = randpdf(f_lambda,xi_lambda,[1, 1]); % generate one random number within the given limits.
-%         % sigma_N (Variance noise floor)
-%         param_sigma_N = randpdf(f_sigma_N,xi_sigma_N,[1, 1]); % generate one random number within the given limits.
-         
-        param_T = T_min + (T_max-T_min)*rand; % generate one random number
+        % T (Reverberation time):
+        param_T = randpdf(f_T,xi_T,[1, 1]); % generate one random number
         % G0 (Reverberation gain)  
-        param_G0 = (G0_min + (G0_max-G0_min)*rand); % generate one random number within the given limits.
+        param_G0 = randpdf(f_G0,xi_G0,[1, 1]); % generate one random number within the given limits.
         % lambda ()  
-        param_lambda = lambda_min + (lambda_max-lambda_min)*rand; % generate one random number within the given limits.
+        param_lambda = randpdf(f_lambda,xi_lambda,[1, 1]); % generate one random number within the given limits.
         % sigma_N (Variance noise floor)
-        param_sigma_N = sigmaN_min + (sigmaN_max-sigmaN_min)*rand; % generate one random number within the given limits.
+        param_sigma_N = randpdf(f_sigma_N,xi_sigma_N,[1, 1]); % generate one random number within the given limits.
         
-%         if param_T < T_min
-%             param_T = T_min;
-%         end
-%         if param_T > T_max
-%             param_T = T_max;
-%         end
-%         if param_G0 < G0_min
-%             param_G0 = G0_min;
-%         end
-%         if param_T > G0_max
-%             param_G0 = G0_max;
-%         end
-%         if param_lambda < lambda_min
-%             param_lambda = lambda_min;
-%         end
-%         if param_lambda > lambda_max
-%             param_lambda = lambda_max;
-%         end
-%         if param_sigma_N < sigmaN_min
-%             param_sigma_N = sigmaN_min;
-%         end
-%         if param_sigma_N > sigmaN_max
-%             param_sigma_N = sigmaN_max;
-%         end
+        theta_prop = [param_T param_G0 param_lambda param_sigma_N];
         
-        theta_curr = [param_T param_G0 param_lambda param_sigma_N];
+        while(check_params(theta_prop,prior)==2)
+            theta_prop = mvnrnd(theta_curr,covariance);
+        end
+        
+        theta_prop = mvnrnd(theta_curr,covariance);
+        
         %% STEP 2: Simulate data using Turing model, based on parameters from STEP 1 and create statistics
         
         [Pv, t] = sim_turin_matrix_gpu(N, Bw, Ns, theta_curr);
@@ -185,20 +151,14 @@ for a = 2:iterations
     params_lambda(a,:)  = out(4,1:nbr_extract);
     params_sigma_N(a,:) = out(5,1:nbr_extract);
     
-%    % Update the prior for the next iteration
-%    [f_T,xi_T] = ksdensity(params_T(a,:));
-%    [f_G0,xi_G0] = ksdensity(params_G0(a,:));
-%    [f_lambda,xi_lambda] = ksdensity(params_lambda(a,:));
-%    [f_sigma_N,xi_sigma_N] = ksdensity(params_sigma_N(a,:));
+    covariance = cov(out(2:5,:));
+    
+   % Update the prior for the next iteration
+   [f_T,xi_T] = ksdensity(params_T(a,:));
+   [f_G0,xi_G0] = ksdensity(params_G0(a,:));
+   [f_lambda,xi_lambda] = ksdensity(params_lambda(a,:));
+   [f_sigma_N,xi_sigma_N] = ksdensity(params_sigma_N(a,:));
    
-   T_min      = min(params_T(a,:));
-   T_max      = max(params_T(a,:));
-   G0_min     = min(params_G0(a,:));
-   G0_max     = max(params_G0(a,:));
-   lambda_min = min(params_lambda(a,:));
-   lambda_max = max(params_lambda(a,:));
-   sigmaN_min = min(params_sigma_N(a,:));
-   sigmaN_max = max(params_sigma_N(a,:));
    disp(a);
 end 
 disp('ABC algorithm finished... ')

@@ -6,7 +6,7 @@ set(groot, 'defaultLegendInterpreter','latex');
 blocks = 1;
 thetas_plot = thetas(:,1:j);
 tt = tiledlayout(4,blocks)
-title(tt,"Density plots - smallest prior")
+title(tt,"Density plots - smallest covariance")
 len = length(thetas_plot(1,1:j));
 
 linesize = 1;
@@ -31,6 +31,7 @@ for kk = 1:blocks
     %[f x] = ksdensity(thetas(1,1+len/blocks*(kk-1):len/blocks*(kk)));
     [f x] = ksdensity(thetas_plot(1,1:len/blocks*(kk)),linspace(prior(1,1), prior(1,2),1000));
     plot(x,f,'LineWidth',linesize,'Color','black')
+    xline(mean(thetas(1,500:j)))
     [MAPest, index] = max(f);
     MAPx = ones(100,1)*x(index);
     MAPy = linspace(0,MAPest,100);
@@ -42,7 +43,7 @@ for kk = 1:blocks
     title("$T$",'Fontsize',fontsize)
 end
 
-legend( "Approx. posterior", "MAP estimate","True value")
+legend( "Approx. posterior",'Mean', "MAP estimate","True value")
 
 for kk = 1:blocks
     nexttile
@@ -54,6 +55,7 @@ for kk = 1:blocks
     MAPy = linspace(0,MAPest,100);
     xline(x(index),'Color','red')
     plot(x,f,'LineWidth',linesize,'Color','black')
+    xline(mean(thetas(2,500:j)))
     xline(G0_true,'--','LineWidth',linesize)
     %xline(G0_start,'LineWidth',linesize,'Color','blue')
     xlim([prior(2,1) prior(2,2)])
@@ -70,6 +72,7 @@ for kk = 1:blocks
     MAPy = linspace(0,MAPest,100);
     xline(x(index),'Color','red')
     plot(x,f,'LineWidth',linesize,'Color','black')
+    xline(mean(thetas(3,500:j)))
     xline(lambda_true,'--','LineWidth',linesize)
     %xline(lambda_start,'LineWidth',linesize,'Color','blue')
     xlim([prior(3,1) prior(3,2)])
@@ -86,6 +89,7 @@ for kk = 1:blocks
     MAPy = linspace(0,MAPest,100);
     xline(x(index),'Color','red')
     plot(x,f,'LineWidth',linesize,'Color','black')
+    xline(mean(thetas(4,500:j)))
     xline(sigma_N_true,'--','LineWidth',linesize)
     %xline(sigma_start,'LineWidth',linesize,'Color','blue')
     xlim([prior(4,1) prior(4,2)])

@@ -1,10 +1,10 @@
 %%
 figure(6)
 %covariance = covariancesmall;
-normalT = makedist("Normal","mu",theta_start(1),"sigma",sqrt(covariance(1,1)))
-normalG0 = makedist("Normal","mu",theta_start(2),"sigma",sqrt(covariance(2,2)))
-normallambda = makedist("Normal","mu",theta_start(3),"sigma",sqrt(covariance(3,3)))
-normalsigma = makedist("Normal","mu",theta_start(4),"sigma",sqrt(covariance(4,4)))
+normalT = makedist("Normal","mu",theta_true(1),"sigma",sqrt(covariance(1,1)))
+normalG0 = makedist("Normal","mu",theta_true(2),"sigma",sqrt(covariance(2,2)))
+normallambda = makedist("Normal","mu",theta_true(3),"sigma",sqrt(covariance(3,3)))
+normalsigma = makedist("Normal","mu",theta_true(4),"sigma",sqrt(covariance(4,4)))
 
 
 yT = linspace(prior(1,1),prior(1,2),500);

@@ -25,7 +25,7 @@ thetas = zeros(4,k);
 thetas(:,1) = theta_curr';
 
 for i = 1:L
-    [Pv, t] = sim_turin_matrix_gpu(N, B, Ns, theta_curr);
+    [Pv, t] = sim_turin_matrix(N, B, Ns, theta_curr);
     s_sim(i,:) = create_statistics(Pv, t);
 end
 
@@ -42,7 +42,7 @@ for j = 2:k
     end
     
     parfor i = 1:L
-        [Pv, t] = sim_turin_matrix_gpu(N, B, Ns, theta_prop);
+        [Pv, t] = sim_turin_matrix(N, B, Ns, theta_prop);
         s_sim(i,:) = create_statistics(Pv, t);
     end
     loglikelihoodnew = (synth_loglikelihood(s_obs,s_sim));

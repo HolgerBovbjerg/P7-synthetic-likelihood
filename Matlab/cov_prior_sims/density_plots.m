@@ -49,20 +49,22 @@ end
 
 legend( "Approx. posterior",'Mean', "MAP estimate","True value")
 
+thetas_plot(2,:) = pow2db(thetas_plot(2,:));
+
 for kk = 1:blocks
     nexttile
     hold on
     %[f x] = ksdensity(thetas(2,1+len/blocks*(kk-1):len/blocks*(kk)));
-    [f x] = ksdensity(thetas_plot(2,burnin:len/blocks*(kk)),linspace(prior(2,1), prior(2,2),100000));
+    [f x] = ksdensity(thetas_plot(2,burnin:len/blocks*(kk)),pow2db(linspace(prior(2,1), prior(2,2),100000)));
     [MAPest, index] = max(f);
     MAPx = ones(100,1)*x(index);
     MAPy = linspace(0,MAPest,100);
     xline(x(index),'Color','red')
     plot(x,f,'LineWidth',linesize,'Color','black')
-    xline(mean(thetas(2,burnin:j)))
-    xline(G0_true,'--','LineWidth',linesize)
+    xline(mean(thetas_plot(2,burnin:j-1)))
+    xline(pow2db(G0_true),'--','LineWidth',linesize)
     %xline(G0_start,'LineWidth',linesize,'Color','blue')
-    xlim([prior(2,1) prior(2,2)])
+    xlim([pow2db(prior(2,1)) pow2db(prior(2,2))])
     title("$G_0$",'Fontsize',fontsize)
 end
 

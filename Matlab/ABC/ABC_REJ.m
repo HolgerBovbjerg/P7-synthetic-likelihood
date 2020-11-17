@@ -18,12 +18,14 @@ load("Theta_true_values.mat")
 
 % Theta_true_values = [T G0 lambda sigma_N];
 
-S_obs = zeros(2000,9);
-
-parfor i = 1:2000
-    [Pv, t] = sim_turin_matrix_gpu(N, Bw, Ns, theta_true);
-     S_obs(i,:) = create_statistics(Pv, t);
-end
+load('S_obs.mat')
+% 
+% S_obs = zeros(2000,9);
+% 
+% parfor i = 1:2000
+%     [Pv, t] = sim_turin_matrix_gpu(N, Bw, Ns, theta_true);
+%      S_obs(i,:) = create_statistics(Pv, t);
+% end
 %%
 mu_S_obs = mean(S_obs);     % Mean of the summary statistics 
 Sigma_S_obs = cov(S_obs);     % Covariance of summary statistics
@@ -33,7 +35,7 @@ load('Prior_data_large_prior_min_max_values.mat')
  
 %% --- ABC rejection algorithm ---------------------------------------------------------------------
 % Set total iterations
-iterations = 10;
+iterations = 1;
 
 % Number of summary statistics sets to generate  
 sumstat_iter = 2000;
@@ -86,7 +88,7 @@ end
 % Sort the "out" matrix so that the lowest euclidean distance is at the
 % (1,1) matrix position and highest distance is at (max,1) 
 out = sortrows(out',1)';
-%%
+%
 % Following vectors holds ALL extracted parameter values 
 % that was within euclidean distance
 params_T(1,:)       = out(2,1:nbr_extract);
@@ -95,10 +97,12 @@ params_lambda(1,:)  = out(4,1:nbr_extract);
 params_sigma_N(1,:) = out(5,1:nbr_extract);
 
 % Update the prior for the next iteration
-% [f_T,xi_T] = ksdensity(params_T(1,:));
-% [f_G0,xi_G0] = ksdensity(params_G0(1,:));
-% [f_lambda,xi_lambda] = ksdensity(params_lambda(1,:));
-% [f_sigma_N,xi_sigma_N] = ksdensity(params_sigma_N(1,:));
+[f_T,xi_T] = ksdensity(params_T(1,:));
+[f_G0,xi_G0] = ksdensity(params_G0(1,:));
+[f_lambda,xi_lambda] = ksdensity(params_lambda(1,:));
+[f_sigma_N,xi_sigma_N] = ksdensity(params_sigma_N(1,:));
+
+%% Iterate
 
 for a = 2:iterations 
     out = zeros(5,sumstat_iter);
@@ -114,17 +118,19 @@ for a = 2:iterations
         % sigma_N (Variance noise floor)
         param_sigma_N = randpdf(f_sigma_N,xi_sigma_N,[1, 1]); % generate one random number within the given limits.
         
-        theta_prop = [param_T param_G0 param_lambda param_sigma_N];
+        theta_curr = [param_T param_G0 param_lambda param_sigma_N];
+        
+        theta_prop = mvnrnd(theta_curr,covariance);
         
         while(check_params(theta_prop,prior)==2)
             theta_prop = mvnrnd(theta_curr,covariance);
         end
         
-        theta_prop = mvnrnd(theta_curr,covariance);
+        
         
         %% STEP 2: Simulate data using Turing model, based on parameters from STEP 1 and create statistics
         
-        [Pv, t] = sim_turin_matrix_gpu(N, Bw, Ns, theta_curr);
+        [Pv, t] = sim_turin_matrix_gpu(N, Bw, Ns, theta_prop);
     	S_simulated = create_statistics(Pv, t);
         %% STEP 3: calculate the difference between observed and simulated summary statistics 
         % Mahalanobis distance

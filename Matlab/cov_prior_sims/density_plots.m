@@ -34,6 +34,7 @@ for kk = 1:blocks
     nexttile
     hold on
     %[f x] = ksdensity(thetas(1,1+len/blocks*(kk-1):len/blocks*(kk)));
+
     [f x bw] = ksdensity(thetas_plot(1,burnin:len/blocks*(kk)),linspace(prior(1,1), prior(1,2),100000));
     plot(x,f,'LineWidth',linesize,'Color','black')
     xline(mean(thetas(1,burnin:j)))

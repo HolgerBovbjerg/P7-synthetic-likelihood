@@ -38,7 +38,7 @@ load('Prior_data_large_prior_min_max_values.mat')
 iterations = 1;
 
 % Number of summary statistics sets to generate  
-sumstat_iter = 2000;
+sumstat_iter = 10000;
 
 % Extract this amount of parameter entries from each generated summary
 % statistic
@@ -125,8 +125,6 @@ for a = 2:iterations
         while(check_params(theta_prop,prior)==2)
             theta_prop = mvnrnd(theta_curr,covariance);
         end
-        
-        
         
         %% STEP 2: Simulate data using Turing model, based on parameters from STEP 1 and create statistics
         

@@ -1,6 +1,6 @@
 clear
 
-load('Prior_data_medium_prior_min_max_values.mat')
+load('Prior_data_large_prior_min_max_values.mat')
 load('Theta_true_values.mat')
 
 
@@ -25,6 +25,10 @@ parfor step = 1:steps
 end
 ylabels =['mean(m_0)','mean(m_1)','mean(m_2)','var(m_0)','var(m_1)','var(m_2)','cov(m_0,m_1)','cov(m_0,m_2)','cov(m_1,m_2)'];
 tiles = [1 5 9 13 17 21 25 29 33];
+% set(gca,'xtick',[])
+% set(gca,'xticklabel',[])
+set(gca,'ytick',[])
+set(gca,'yticklabel',[])
 for i = 1:9
     nexttile(tiles(i))
     scatter(T,S(:,i))

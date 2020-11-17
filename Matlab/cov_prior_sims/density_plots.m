@@ -30,7 +30,7 @@ for kk = 1:blocks
     hold on
     %[f x] = ksdensity(thetas(1,1+len/blocks*(kk-1):len/blocks*(kk)));
     [f x] = ksdensity(thetas_plot(1,1:len/blocks*(kk)),linspace(prior(1,1), prior(1,2),1000));
-    plot(x,f,'LineWidth',linesize,'Color','black')
+    area(x,f,'LineWidth',linesize,'FaceColor','#bbbbbb')
     [MAPest, index] = max(f);
     MAPx = ones(100,1)*x(index);
     MAPy = linspace(0,MAPest,100);

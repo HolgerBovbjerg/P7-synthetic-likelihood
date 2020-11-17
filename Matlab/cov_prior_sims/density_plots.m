@@ -7,8 +7,9 @@ blocks = 1;
 
 thetas_plot = thetas(:,1:j);
 
-tt = tiledlayout(4,blocks)
-title(tt,"Density plots - small covariance")
+tt = tiledlayout(2,2)
+% title(tt,"Density plots - small covariance")
+    
 len = length(thetas_plot(1,1:j));
 
 linesize = 1;
@@ -44,7 +45,11 @@ for kk = 1:blocks
     xline(T_true,'--','LineWidth',linesize)
     %xline(T_start,'LineWidth',linesize,'Color','blue')
     xlim([prior(1,1) prior(1,2)])
+    xticks(prior(1,1):prior(1,2)/5:prior(1,2))
     title("$T$",'Fontsize',fontsize)
+    set(gca,'Yticklabel',[])
+%     set(tt,'ytick',[])
+
 end
 
 legend( "Approx. posterior",'Mean', "MAP estimate","True value")
@@ -65,6 +70,8 @@ for kk = 1:blocks
     xline(pow2db(G0_true),'--','LineWidth',linesize)
     %xline(G0_start,'LineWidth',linesize,'Color','blue')
     xlim([pow2db(prior(2,1)) pow2db(prior(2,2))])
+    xticks(pow2db(prior(2,1)):2:pow2db(prior(2,2)))
+    set(gca,'Yticklabel',[])
     title("$G_0$",'Fontsize',fontsize)
 end
 
@@ -82,6 +89,8 @@ for kk = 1:blocks
     xline(lambda_true,'--','LineWidth',linesize)
     %xline(lambda_start,'LineWidth',linesize,'Color','blue')
     xlim([prior(3,1) prior(3,2)])
+    xticks(prior(3,1):prior(3,2)/5:prior(3,2))
+    set(gca,'Yticklabel',[])
     title("$\lambda$",'Fontsize',fontsize)
 end
 
@@ -99,6 +108,7 @@ for kk = 1:blocks
     xline(sigma_N_true,'--','LineWidth',linesize)
     %xline(sigma_start,'LineWidth',linesize,'Color','blue')
     xlim([prior(4,1) prior(4,2)])
-    xlabel([num2str(round((len/blocks)*kk)),' steps'])
+    xticks(prior(4,1):prior(4,2)/5:prior(4,2))
+    set(gca,'Yticklabel',[])
     title("$\sigma_N$",'Fontsize',fontsize)
 end

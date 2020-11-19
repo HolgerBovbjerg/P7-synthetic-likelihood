@@ -38,24 +38,28 @@ for j = 2:k
     % Draw a new proposed theta from multivariate normal distribution
     theta_prop = mvnrnd(theta_curr,covariance);
     i = 0;
-    % Check to see if the proposed theta is within the prior 
+    % Check to see if the proposed theta is within the prior range
+    % if not keep drawing  
     while(check_params(theta_prop,prior)==2) 
         theta_prop = mvnrnd(theta_curr,covariance);
         i = i + 1
     end
-    
+    % Create statistics based on the proposed theta 
     parfor i = 1:L
         [Pv, t] = sim_turin_matrix(N, B, Ns, theta_prop);
         s_sim(i,:) = create_statistics(Pv, t);
     end
+    % Calculate new log-likelihood from statistics
     loglikelihoodnew = (synth_loglikelihood(s_obs,s_sim));
     
-    if exp(loglikelihoodnew-loglikelihood) >  rand
+    % Compare new and old likelihood and accept based on Hasting-ratio
+    if exp(loglikelihoodnew-loglikelihood) > rand
         loglikelihood = loglikelihoodnew;
         theta_curr = theta_prop;
         accept = accept+1;
     end
+    % Keep the most recent theta
     thetas(:,j) = theta_curr';
     
-    %real_time_plots(theta_true,thetas,j-1,accept,k,prior,theta_prop,loglikelihoodnew,loglikelihood);
+    real_time_plots(theta_true,thetas,j-1,accept,k,prior,theta_prop,loglikelihoodnew,loglikelihood);
 end

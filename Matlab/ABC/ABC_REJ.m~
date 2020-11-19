@@ -2,7 +2,7 @@
 clear
 %% --- Global turin model simulation parameters ---------------------------------------------------
 N  = 300;   % Number of different turin simulations. (Corresponds to the number of columns in Pv matrix)
-Ns = 801;   % Number of time entries for each turin simulation. (Corresponds to the number of rows in Pv matrix)
+Ns = 801;   % Number of time entries for each turin simulation. (Corresponds to the number of columns in Pv matrix)
 Bw = 4e9;   % Bandwidth (4Ghz).
 
 %% --- Generate "observed data" -----------------------------------------------------

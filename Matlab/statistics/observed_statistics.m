@@ -10,8 +10,8 @@ P_h = zeros(50*50,801);
 k = 1;
 for l = 1:50
     for i = 1:50
-        dat = squeeze(HfullNLOS5(i,l,:));
-        P_h(k,:) = abs(ifft(dat,[],1)).^2;
+        dat = squeeze(HfullNLOS5(i,l,:));  % Data = 801 entry vector with complex values. Corresponding to one antenna?
+        P_h(k,:) = abs(ifft(dat,[],1)).^2; 
         k = k+1;
     end
 end

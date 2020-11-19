@@ -25,7 +25,7 @@ thetas = zeros(4,k);
 thetas(:,1) = theta_curr';
 
 for i = 1:L
-    [Pv, t] = sim_turin_matrix(N, B, Ns, theta_curr);
+    [Pv, t] = sim_turin_matrix_gpu(N, B, Ns, theta_curr);
     s_sim(i,:) = create_statistics(Pv, t);
 end
 
@@ -46,14 +46,14 @@ for j = 2:k
     end
     % Create statistics based on the proposed theta 
     parfor i = 1:L
-        [Pv, t] = sim_turin_matrix(N, B, Ns, theta_prop);
+        [Pv, t] = sim_turin_matrix_gpu(N, B, Ns, theta_prop);
         s_sim(i,:) = create_statistics(Pv, t);
     end
     % Calculate new log-likelihood from statistics
     loglikelihoodnew = (synth_loglikelihood(s_obs,s_sim));
     
     % Compare new and old likelihood and accept based on Hasting-ratio
-    if exp(loglikelihoodnew-loglikelihood) >  rand
+    if exp(loglikelihoodnew-loglikelihood) > rand
         loglikelihood = loglikelihoodnew;
         theta_curr = theta_prop;
         accept = accept+1;

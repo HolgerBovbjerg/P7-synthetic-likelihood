@@ -7,15 +7,16 @@ Bw = 4e9;   % Bandwidth (4Ghz).
 
 %% --- Initial max/min conditions for parameters (prior distribution) -----------------------------
 load('Prior_data_large_prior_min_max_values.mat')
-prior(3,2) = 4e9;
 
 %% --- Generate "observed data" -----------------------------------------------------
 load("Theta_true_values.mat") 
-load('covariance_small_prior.mat')
+load('covariance_large_prior.mat')
 % [covariance, ~] = find_cov_prior(prior);
 % covariance = covariance/1000;
 %%
-load('S_obs.mat')
+% load('S_obs.mat')
+load('S_obs_meas_data.mat')
+
 mu_S_obs = mean(S_obs);     % Mean of the summary statistics 
 Sigma_S_obs = cov(S_obs);     % Covariance of summary statistics
  
@@ -26,7 +27,7 @@ thetas = zeros(4,k);
 summ_stats = zeros(9,k);
 dists = zeros(k,1);
 accept = 0;
-tol = 1e3;
+tol = 100e3;
 
 disp('ABC algorithm computing, please wait... ')
 tic
@@ -44,7 +45,7 @@ theta_curr = [param_T param_G0 param_lambda param_sigma_N];
 
 thetas(:,1) = theta_curr';
 %% STEP 2: Simulate data using Turing model, based on parameters from STEP 1 and create statistics
-[Pv, t] = sim_turin_matrix_gpu(N, Bw, Ns, theta_curr);
+[Pv, t] = sim_turin_matrix_gpu_w_delay(N, Bw, Ns, theta_curr,6e-9);
 
 s_curr = create_statistics(Pv, t);
 summ_stats(:,1) = s_curr;
@@ -57,14 +58,14 @@ dists(1) = d_curr;
 loglike_curr = -0.5/tol*d_curr^2; %Gaussian kernel weighting function
 
 %% STEP 4: Run MCMC sampling
-for j = 2:k
+for j = 1:k
     cla reset
     theta_prop = mvnrnd(theta_curr,covariance);
     while(check_params(theta_prop,prior)==2)
         theta_prop = mvnrnd(theta_curr,covariance);
     end
     %% STEP 2: Simulate data using Turing model, based on parameters from STEP 1 and create statistics
-    [Pv, t] = sim_turin_matrix_gpu(N, Bw, Ns, theta_prop);
+    [Pv, t] = sim_turin_matrix_gpu_w_delay(N, Bw, Ns, theta_prop,6e-9);
     s_prop = create_statistics(Pv, t);
     %% STEP 3: calculate the difference between observed and simulated summary statistics 
     % Mahalanobis distance see formular in document.
@@ -84,7 +85,7 @@ for j = 2:k
     summ_stats(:,j) = s_curr';
     dists(j) = d_curr;
     
-    real_time_plots(theta_true,thetas,j-1,accept,k,prior);
+    real_time_plots(theta_true,thetas,j-1,accept,k,prior,[1 1 1 1],loglike_prop,1);
 end 
 
 

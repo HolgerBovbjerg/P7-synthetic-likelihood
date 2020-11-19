@@ -18,7 +18,8 @@ load("Theta_true_values.mat")
 
 % Theta_true_values = [T G0 lambda sigma_N];
 
-load('S_obs.mat')
+% load('S_obs.mat')
+load('S_obs_meas_data.mat')
 % 
 % S_obs = zeros(2000,9);
 % 
@@ -38,7 +39,7 @@ load('Prior_data_large_prior_min_max_values.mat')
 iterations = 1;
 
 % Number of summary statistics sets to generate  
-sumstat_iter = 10000;
+sumstat_iter = 2000;
 
 % Extract this amount of parameter entries from each generated summary
 % statistic
@@ -69,7 +70,7 @@ parfor i = 1:sumstat_iter
     theta_curr = [param_T param_G0 param_lambda param_sigma_N];
     
     %% STEP 2: Simulate data using Turing model, based on parameters from STEP 1 and create statistics
-    [Pv, t] = sim_turin_matrix_gpu(N, Bw, Ns, theta_curr);
+    [Pv, t] = sim_turin_matrix_gpu_w_delay(N, Bw, Ns, theta_curr,6e-9);
     S_simulated = create_statistics(Pv, t);
     %% STEP 3: calculate the difference between observed and simulated summary statistics 
     % Mahalanobis distance see formular in document.

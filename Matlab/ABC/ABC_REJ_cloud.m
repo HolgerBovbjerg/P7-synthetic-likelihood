@@ -1,7 +1,7 @@
 %% ABC implementation 2 - ABC REJECTION ALGORITHM:
 clear
 %% --- Global turin model simulation parameters ---------------------------------------------------
-N  = 10;   % Number of different turin simulations. (Corresponds to the number of columns in Pv matrix)
+N  = 300;   % Number of different turin simulations. (Corresponds to the number of columns in Pv matrix)
 Ns = 801;   % Number of time entries for each turin simulation. (Corresponds to the number of rows in Pv matrix)
 Bw = 4e9;   % Bandwidth (4Ghz).
 
@@ -39,7 +39,7 @@ load('Prior_data_large_prior_min_max_values.mat')
 iterations = 1;
 
 % Number of summary statistics sets to generate  
-sumstat_iter = 5;
+sumstat_iter = 50;
 
 % Extract this amount of parameter entries from each generated summary
 % statistic

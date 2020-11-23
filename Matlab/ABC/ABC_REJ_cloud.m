@@ -39,8 +39,8 @@ load('Prior_data_large_prior_min_max_values.mat')
 iterations = 1;
 
 % Number of summary statistics sets to generate  
-sumstat_iter = 1000000;
-
+sumstat_iter = 100;
+iters2 = 1000;
 % Extract this amount of parameter entries from each generated summary
 % statistic
 nbr_extract = 4;
@@ -56,37 +56,39 @@ tic
 % Iteration 1
 out = zeros(5,sumstat_iter);
 d = zeros(sumstat_iter,1);
-parfor i = 1:sumstat_iter
-    %% STEP 1: Sample parameter from predefined prior distribution (uniform):      
-    % T (Reverberation time):
-    param_T = prior(1,1) + (prior(1,2) - prior(1,1)).*rand; % generate one random number
-    % G0 (Reverberation gain)  
-    param_G0 = prior(2,1) + (prior(2,2) - prior(2,1)).*rand; % generate one random number within the given limits.
-    % lambda ()  
-    param_lambda = prior(3,1) + (prior(3,2) - prior(3,1)).*rand; % generate one random number within the given limits.
-    % sigma_N (Variance noise floor)
-    param_sigma_N = prior(4,1) + (prior(4,2) - prior(4,1)).*rand; % generate one random number within the given limits.
-
-    theta_curr = [param_T param_G0 param_lambda param_sigma_N];
-    
-    %% STEP 2: Simulate data using Turing model, based on parameters from STEP 1 and create statistics
-    [Pv, t] = sim_turin_matrix(N, Bw, Ns, theta_curr);
-    S_simulated = create_statistics(Pv, t);
-    %% STEP 3: calculate the difference between observed and simulated summary statistics 
-    % Mahalanobis distance see formular in document.
-    d(i) = (S_simulated - mu_S_obs)/Sigma_S_obs * (S_simulated - mu_S_obs)';
-
-    % Row 1 of the out vector contains the distance 
-    % the rest of the rows contains the corresponding parameters 
-    % used for generating that specific distance.    
-    out(:,i) =  [d(i);...
-                param_T;...
-                param_G0;...
-                param_lambda;...
-                param_sigma_N];
-    disp(i);
+for i2 = 1:iters2
+    parfor i = 1:sumstat_iter
+        %% STEP 1: Sample parameter from predefined prior distribution (uniform):
+        % T (Reverberation time):
+        param_T = prior(1,1) + (prior(1,2) - prior(1,1)).*rand; % generate one random number
+        % G0 (Reverberation gain)
+        param_G0 = prior(2,1) + (prior(2,2) - prior(2,1)).*rand; % generate one random number within the given limits.
+        % lambda ()
+        param_lambda = prior(3,1) + (prior(3,2) - prior(3,1)).*rand; % generate one random number within the given limits.
+        % sigma_N (Variance noise floor)
+        param_sigma_N = prior(4,1) + (prior(4,2) - prior(4,1)).*rand; % generate one random number within the given limits.
+        
+        theta_curr = [param_T param_G0 param_lambda param_sigma_N];
+        
+        %% STEP 2: Simulate data using Turing model, based on parameters from STEP 1 and create statistics
+        [Pv, t] = sim_turin_matrix(N, Bw, Ns, theta_curr);
+        S_simulated = create_statistics(Pv, t);
+        %% STEP 3: calculate the difference between observed and simulated summary statistics
+        % Mahalanobis distance see formular in document.
+        d(i) = (S_simulated - mu_S_obs)/Sigma_S_obs * (S_simulated - mu_S_obs)';
+        
+        % Row 1 of the out vector contains the distance
+        % the rest of the rows contains the corresponding parameters
+        % used for generating that specific distance.
+        out(:,i) =  [d(i);...
+            param_T;...
+            param_G0;...
+            param_lambda;...
+            param_sigma_N];
+        disp(i);
+    end
     save('entire_workspace.mat')
-end 
+end
 % Sort the "out" matrix so that the lowest euclidean distance is at the
 % (1,1) matrix position and highest distance is at (max,1) 
 out = sortrows(out',1)';

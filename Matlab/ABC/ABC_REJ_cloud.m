@@ -87,6 +87,7 @@ for i2 = 1:iters2
             param_sigma_N];
         disp(i);
     end
+    disp('Saving workspace...')
     save('entire_workspace.mat')
 end
 % Sort the "out" matrix so that the lowest euclidean distance is at the

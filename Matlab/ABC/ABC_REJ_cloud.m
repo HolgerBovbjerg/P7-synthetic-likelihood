@@ -85,6 +85,7 @@ parfor i = 1:sumstat_iter
                 param_lambda;...
                 param_sigma_N];
     disp(i);
+    save('entire_workspace.mat')
 end 
 % Sort the "out" matrix so that the lowest euclidean distance is at the
 % (1,1) matrix position and highest distance is at (max,1) 

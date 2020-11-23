@@ -1,7 +1,7 @@
 %% ABC implementation 2 - ABC REJECTION ALGORITHM:
 clear
 %% --- Global turin model simulation parameters ---------------------------------------------------
-N  = 5;   % Number of different turin simulations. (Corresponds to the number of columns in Pv matrix)
+N  = 300;   % Number of different turin simulations. (Corresponds to the number of columns in Pv matrix)
 Ns = 801;   % Number of time entries for each turin simulation. (Corresponds to the number of rows in Pv matrix)
 Bw = 4e9;   % Bandwidth (4Ghz).
 
@@ -40,7 +40,7 @@ iterations = 1;
 
 % Number of summary statistics sets to generate  
 sumstat_iter = 100;
-iters2 = 1000;
+iters2 = 10000;
 % Extract this amount of parameter entries from each generated summary
 % statistic
 nbr_extract = 4;
@@ -54,10 +54,11 @@ disp('ABC algorithm computing, please wait... ')
 tic
 
 % Iteration 1
-out = zeros(5,sumstat_iter);
-d = zeros(sumstat_iter,1);
+out = zeros(5,sumstat_iter*iters2);
+d = zeros(sumstat_iter*iters2,1);
+k = 1;
 for i2 = 1:iters2
-    parfor i = 1:sumstat_iter
+    parfor p = k:k+sumstat_iter
         %% STEP 1: Sample parameter from predefined prior distribution (uniform):
         % T (Reverberation time):
         param_T = prior(1,1) + (prior(1,2) - prior(1,1)).*rand; % generate one random number
@@ -75,18 +76,19 @@ for i2 = 1:iters2
         S_simulated = create_statistics(Pv, t);
         %% STEP 3: calculate the difference between observed and simulated summary statistics
         % Mahalanobis distance see formular in document.
-        d(i) = (S_simulated - mu_S_obs)/Sigma_S_obs * (S_simulated - mu_S_obs)';
+        d(p) = (S_simulated - mu_S_obs)/Sigma_S_obs * (S_simulated - mu_S_obs)';
         
         % Row 1 of the out vector contains the distance
         % the rest of the rows contains the corresponding parameters
         % used for generating that specific distance.
-        out(:,i+(i2-1)*sumstat_iter) =  [d(i);...
+        out(:,p) =  [d(p);...
             param_T;...
             param_G0;...
             param_lambda;...
             param_sigma_N];
-        disp(i);
+        disp(p);
     end
+    k = k+sumstat_iter+1;
     disp('Saving workspace...')
     save('entire_workspace.mat')
 end

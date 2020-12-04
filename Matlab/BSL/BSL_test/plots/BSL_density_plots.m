@@ -37,7 +37,7 @@ set(gca,'ytick',[])
 set(gca,'yticklabel',[])
 
 
-legend( "Approx. posterior",'MMSEE',"True value")
+legend( "Approx. posterior",'MMSE',"True value")
 
 thetas_plot(2,:) = pow2db(thetas_plot(2,:));
 

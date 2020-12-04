@@ -59,8 +59,8 @@ end
 t = tiledlayout(9,4,'TileSpacing','Compact','Padding','Compact');
 % t.Units = 'inches';
 % t.OuterPosition = [0 0 3.5 7];
-% ylabels =["\mu(m_0)","\mu(m_1)","\mu(m_2)","var(m_0)","var(m_1)","var(m_2)","cov(m_0,m_1)","cov(m_0,m_2)","cov(m_1,m_2)"];
-ylabels =["s(1)","s(2)","s(3)","s(4)","s(5)","s(6)","s(7)","s(8)","s(9)"];
+ylabels =["\mu(m_0)","\mu(m_1)","\mu(m_2)","var(m_0)","var(m_1)","var(m_2)","cov(m_0,m_1)","cov(m_0,m_2)","cov(m_1,m_2)"];
+% ylabels =["s(1)","s(2)","s(3)","s(4)","s(5)","s(6)","s(7)","s(8)","s(9)"];
 
 tiles(1,:) = [1 5 9 13 17 21 25 29 33];
 set(t,'DefaultTextFontSize',8)
@@ -97,7 +97,7 @@ for i = 1:9
 end
 for i = 1:9
     nexttile(tiles(i)+2)
-    h = scatter(lambda_vary/1e9,S_T(:,i));
+    h = scatter(lambda_vary/1e9,S_lambda(:,i));
     set(h,'SizeData',10)
     if i == 1
         subtitle('\lambda \times 10^{9}')

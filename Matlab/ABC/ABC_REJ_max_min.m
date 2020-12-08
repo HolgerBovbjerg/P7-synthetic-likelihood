@@ -14,20 +14,19 @@ load("Theta_true_values.mat")
 % G0      = db2pow(-83.9);
 % lambda  = 10e9;
 % sigma_N = 1.673e-4;
-% theta_true = [T G0 lambda sigma_N];
-
 % M = 2000; % Number of summary statisctics realisations
 
 % Theta_true_values = [T G0 lambda sigma_N];
 
+load('S_obs.mat')
+% load('S_obs_meas_data.mat')
+%
 % S_obs = zeros(2000,9);
 %
 % parfor i = 1:2000
 %     [Pv, t] = sim_turin_matrix_gpu(N, Bw, Ns, theta_true);
 %      S_obs(i,:) = create_statistics(Pv, t);
 % end
-
-load('S_obs.mat')
 %%
 mu_S_obs = mean(S_obs);     % Mean of the summary statistics
 Sigma_S_obs = cov(S_obs);     % Covariance of summary statistics
@@ -40,14 +39,11 @@ load('Prior_data_large_prior_min_max_values.mat')
 iterations = 3;
 
 % Number of summary statistics sets to generate
-sumstat_iter = 100;
+sumstat_iter = 2000;
 
 % Extract this amount of parameter entries from each generated summary
 % statistic
-nbr_extract = 10;
-
-% Probability factor
-prob_factor = 1e4;
+nbr_extract = 100;
 
 params_T = zeros(iterations,nbr_extract);
 params_G0 = zeros(iterations,nbr_extract);
@@ -60,28 +56,23 @@ tic
 % Iteration 1
 out = zeros(5,sumstat_iter);
 d = zeros(sumstat_iter,1);
-param_T = zeros(sumstat_iter,1);
-param_G0 = zeros(sumstat_iter,1);
-param_lambda = zeros(sumstat_iter,1);
-param_sigma_N = zeros(sumstat_iter,1);
-
 parfor i = 1:sumstat_iter
-    % STEP 1: Sample parameter from predefined prior distribution (uniform):
+    %% STEP 1: Sample parameter from predefined prior distribution (uniform):
     % T (Reverberation time):
-    param_T(i) = prior(1,1) + (prior(1,2) - prior(1,1)).*rand; % generate one random number
+    param_T = prior(1,1) + (prior(1,2) - prior(1,1)).*rand; % generate one random number
     % G0 (Reverberation gain)
-    param_G0(i) = prior(2,1) + (prior(2,2) - prior(2,1)).*rand; % generate one random number within the given limits.
+    param_G0 = prior(2,1) + (prior(2,2) - prior(2,1)).*rand; % generate one random number within the given limits.
     % lambda ()
-    param_lambda(i) = prior(3,1) + (prior(3,2) - prior(3,1)).*rand; % generate one random number within the given limits.
+    param_lambda = prior(3,1) + (prior(3,2) - prior(3,1)).*rand; % generate one random number within the given limits.
     % sigma_N (Variance noise floor)
-    param_sigma_N(i) = prior(4,1) + (prior(4,2) - prior(4,1)).*rand; % generate one random number within the given limits.
+    param_sigma_N = prior(4,1) + (prior(4,2) - prior(4,1)).*rand; % generate one random number within the given limits.
     
-    theta_curr = [param_T(i) param_G0(i) param_lambda(i) param_sigma_N(i)];
+    theta_curr = [param_T param_G0 param_lambda param_sigma_N];
     
-    % STEP 2: Simulate data using Turing model, based on parameters from STEP 1 and create statistics
+    %% STEP 2: Simulate data using Turing model, based on parameters from STEP 1 and create statistics
     [Pv, t] = sim_turin_matrix_gpu(N, Bw, Ns, theta_curr);
     S_simulated = create_statistics(Pv, t);
-    % STEP 3: calculate the difference between observed and simulated summary statistics
+    %% STEP 3: calculate the difference between observed and simulated summary statistics
     % Mahalanobis distance see formular in document.
     d(i) = (S_simulated - mu_S_obs)/Sigma_S_obs * (S_simulated - mu_S_obs)';
     
@@ -89,7 +80,10 @@ parfor i = 1:sumstat_iter
     % the rest of the rows contains the corresponding parameters
     % used for generating that specific distance.
     out(:,i) =  [d(i);...
-                theta_curr'];
+        param_T;...
+        param_G0;...
+        param_lambda;...
+        param_sigma_N];
     disp(i);
 end
 % Sort the "out" matrix so that the lowest euclidean distance is at the
@@ -102,42 +96,60 @@ params_T(1,:)       = out(2,1:nbr_extract);
 params_G0(1,:)      = out(3,1:nbr_extract);
 params_lambda(1,:)  = out(4,1:nbr_extract);
 params_sigma_N(1,:) = out(5,1:nbr_extract);
-params = [params_T; params_G0; params_lambda; params_sigma_N];
 
-% Calculate first weights and covariance
-weights_T = ones(1,nbr_extract)./nbr_extract;
-weights_G0 = ones(1,nbr_extract)./nbr_extract;
-weights_lambda = ones(1,nbr_extract)./nbr_extract;
-weights_sigma_N = ones(1,nbr_extract)./nbr_extract;
-weights = [weights_T; weights_G0; weights_lambda; weights_sigma_N];
-var_T = var(params_T(1,:));
-var_G0 = var(params_G0(1,:));
-var_lambda = var(params_lambda(1,:));
-var_sigma_N = var(params_sigma_N(1,:));
-covariance = diag([var_T var_G0 var_lambda var_sigma_N]);
+T_min = min(params_T(1,:));
+if T_min < prior(1,1)
+    T_min = prior(1,1);
+end
+G0_min = min(params_G0(1,:));
+if G0_min < prior(2,1)
+    G0_min = prior(2,1);
+end
+lambda_min = min(params_lambda(1,:));
+if lambda_min < prior(3,1)
+    lambda_min = prior(3,1);
+end
+sigma_N_min = min(params_sigma_N(1,:));
+if sigma_N_min < prior(4,1)
+    sigma_N_min = prior(4,1);
+end
+T_max = max(params_T(1,:));
+if T_max < prior(1,2)
+    T_max = prior(1,2);
+end
+G0_max = max(params_G0(1,:));
+if G0_max < prior(2,2)
+    G0_max = prior(2,2);
+end
+lambda_max = max(params_lambda(1,:));
+if lambda_max < prior(3,2)
+    lambad_max = prior(3,2);
+end
+sigma_N_max = max(params_sigma_N(1,:));
+if sigma_N_max < prior(4,2)
+    sigma_N_max = prior(4,2);
+end
 
-% Choose theta from accepted parameters of last iteration with propbability based on wieghts
-index_T = randsample((1:nbr_extract),sumstat_iter,true,weights(1,:));
-index_G0 = randsample((1:nbr_extract),sumstat_iter,true,weights(2,:));
-index_lambda = randsample((1:nbr_extract),sumstat_iter,true,weights(3,:));
-index_sigma_N = randsample((1:nbr_extract),sumstat_iter,true,weights(4,:));
+%% Iterate
 
-theta_prop = [params_T(1,index_T); params_G0(1,index_G0); params_lambda(1,index_lambda); params_sigma_N(1,index_sigma_N)];
-
-old_weights = weights;
-
-%% sequential ABC Iterations (PMC)
 for a = 2:iterations
     out = zeros(5,sumstat_iter);
-    d = zeros(sumstat_iter,1);   
-    for i = 1:sumstat_iter
-        % Perturb theta 
-        theta_curr = mvnrnd(theta_prop(:,i),covariance);
-        while(check_params(theta_curr,prior)==2)
-            theta_curr = mvnrnd(theta_prop(:,i),covariance);
-        end
-        theta_curr(3) = round(theta_curr(3));
+    d = zeros(sumstat_iter,1);
+    parfor i = 1:sumstat_iter
+        %% STEP 1: Sample parameter from predefined prior distribution (uniform):
+        % T (Reverberation time):
+        param_T = T_min + (T_max - T_min).*rand; % generate one random number
+        % G0 (Reverberation gain)
+        param_G0 = G0_min + (G0_max - G0_min).*rand; % generate one random number within the given limits.
+        % lambda ()
+        param_lambda = lambda_min + (lambda_max - lambda_min).*rand; % generate one random number within the given limits.
+        % sigma_N (Variance noise floor)
+        param_sigma_N = sigma_N_min + (sigma_N_max - sigma_N_min).*rand; % generate one random number within the given limits.
+        
+        theta_curr = [param_T param_G0 param_lambda param_sigma_N];
+        
         %% STEP 2: Simulate data using Turing model, based on parameters from STEP 1 and create statistics
+        
         [Pv, t] = sim_turin_matrix_gpu(N, Bw, Ns, theta_curr);
         S_simulated = create_statistics(Pv, t);
         %% STEP 3: calculate the difference between observed and simulated summary statistics
@@ -148,7 +160,10 @@ for a = 2:iterations
         % the rest of the rows contains the corresponding parameters
         % used for generating that specific distance.
         out(:,i) =  [d(i);...
-                    theta_curr'];
+            param_T;...
+            param_G0;...
+            param_lambda;...
+            param_sigma_N];
         disp(i);
     end
     % Sort the "out" matrix so that the lowest distance is at the
@@ -161,37 +176,39 @@ for a = 2:iterations
     params_G0(a,:)      = out(3,1:nbr_extract);
     params_lambda(a,:)  = out(4,1:nbr_extract);
     params_sigma_N(a,:) = out(5,1:nbr_extract);
-
-    params = [params_T(a,:); params_G0(a,:); params_lambda(a,:); params_sigma_N(a,:)];
-
-    for l = 1:size(weights,1)
-        for k = 1:size(weights,2)
-            weights(l,k) = 1 /(sum(pdf('normal',params(l,:), params(l,k), sqrt(covariance(l,l)).* old_weights(l,:))));    
-        end
+    
+    T_min = min(params_T(a,:));
+    if T_min < prior(1,1)
+        T_min = prior(1,1);
     end
-
-    weights = weights./sum(weights,2);
-    probs = round(weights * prob_factor); 
-    covariance = 2*diag(diag(cov(out(2:5,1:nbr_extract)')));
-
-    big_T = [];
-    big_G0 = [];
-    big_lambda = [];
-    big_sigma_N = [];
-
-    for j = 1:nbr_extract
-        big_T = [big_T repelem(params(1,j), probs(1,j))];
-        big_G0 = [big_G0 repelem(params(2,j), probs(2,j))];
-        big_lambda = [big_lambda repelem(params(3,j), probs(3,j))];
-        big_sigma_N = [big_sigma_N repelem(params(4,j), probs(4,j))];
+    G0_min = min(params_G0(a,:));
+    if G0_min < prior(2,1)
+        G0_min = prior(2,1);
     end
-
-    theta_prop = [datasample(big_T, sumstat_iter);...
-                 datasample(big_G0, sumstat_iter);...
-                 datasample(big_lambda, sumstat_iter);...
-                 datasample(big_sigma_N, sumstat_iter)];
-    old_weights = weights;
-
+    lambda_min = min(params_lambda(a,:));
+    if lambda_min < prior(3,1)
+        lambda_min = prior(3,1);
+    end
+    sigma_N_min = min(params_sigma_N(a,:));
+    if sigma_N_min < prior(4,1)
+        sigma_N_min = prior(4,1);
+    end
+    T_max = max(params_T(a,:));
+    if T_max > prior(1,2)
+        T_max = prior(1,2);
+    end
+    G0_max = max(params_G0(a,:));
+    if G0_max > prior(2,2)
+        G0_max = prior(2,2);
+    end
+    lambda_max = max(params_lambda(a,:));
+    if lambda_max > prior(3,2)
+        lambad_max = prior(3,2);
+    end
+    sigma_N_max = max(params_sigma_N(a,:));
+    if sigma_N_max > prior(4,2)
+        sigma_N_max = prior(4,2);
+    end
     disp(a);
 end
 disp('ABC algorithm finished... ')

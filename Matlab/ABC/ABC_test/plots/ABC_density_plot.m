@@ -19,7 +19,7 @@ xlim([prior(1,1)*1e9 prior(1,2)*1e9])
 %set(gca,'xticklabel',[])
 set(gca,'ytick',[])
 set(gca,'yticklabel',[])
-legend( "Approx. posterior",'MMSEE',"True value")
+legend( "Approx. posterior",'MMSE',"True value")
 
 nexttile
 area(xi_G0,f_G0,'FaceColor','#bbbbbb','LineStyle','None')

@@ -10,14 +10,14 @@ Ns = 801; % Number of sample points per Turin simulation
 B = 4e9; % Bandwidth of signal: 4 GHz
 
 sims = 2000;
-L = 50;
+L = 800;
 N = 300;
 PV_temp = zeros(801,sims);
 s_sim = zeros(L,9);
 s_mean = s_sim;
 for i = 1:L
     i
-    for ii = 1:i
+    parfor ii = 1:i
         [Pv, t] = sim_turin_matrix_gpu(N, B, Ns, turin_thetas_2);
         s_sim(ii,:) = create_statistics_new(Pv, t);
     end

@@ -1,4 +1,7 @@
-%% ABC implementation 2 - ABC REJECTION ALGORITHM:
+%% ABC implementation 2 - ABC-PMC ALGORITHM:
+% As described in:
+% Bharti, A., & Pedersen, T. (2020). Calibration of Stochastic Channel Models using Approximate Bayesian Computation.
+% https://doi.org/10.1109/GCWkshps45667.2019.9024563
 clear
 %% --- Global turin model simulation parameters ---------------------------------------------------
 N  = 300;    % Number of different turin simulations.
@@ -35,18 +38,18 @@ Sigma_S_obs = cov(S_obs);     % Covariance of summary statistics
 %% --- Initial max/min conditions for parameters (prior distribution) -----------------------------
 load('Prior_data_large_prior_min_max_values.mat')
 
-%% --- ABC rejection algorithm ---------------------------------------------------------------------
+%% --- ABC PMC algorithm ---------------------------------------------------------------------
 % Set total iterations
-iterations = 3;
+iterations = 15;
 
 % Number of summary statistics sets to generate
-sumstat_iter = 100;
+sumstat_iter = 1000;
 
 % Extract this amount of parameter entries from each generated summary
 % statistic
-nbr_extract = 10;
+nbr_extract = 100;
 
-% Probability factor
+% Probability factor for generating population pool
 prob_factor = 1e4;
 
 params_T = zeros(iterations,nbr_extract);
@@ -57,7 +60,7 @@ params_sigma_N = zeros(iterations,nbr_extract);
 disp('ABC algorithm computing, please wait... ')
 tic
 
-% Iteration 1
+%% Iteration 1 - rejection step on uniform prior
 out = zeros(5,sumstat_iter);
 d = zeros(sumstat_iter,1);
 param_T = zeros(sumstat_iter,1);
@@ -65,17 +68,18 @@ param_G0 = zeros(sumstat_iter,1);
 param_lambda = zeros(sumstat_iter,1);
 param_sigma_N = zeros(sumstat_iter,1);
 
+
+% STEP 1: Sample parameter from predefined prior distribution (uniform):
+% T (Reverberation time):
+param_T(i) = prior(1,1) + (prior(1,2) - prior(1,1)).*rand(sumstat_iter,1); % generate one random number
+% G0 (Reverberation gain)
+param_G0(i) = prior(2,1) + (prior(2,2) - prior(2,1)).*rand(sumstat_iter,1); % generate one random number within the given limits.
+% lambda ()
+param_lambda(i) = prior(3,1) + (prior(3,2) - prior(3,1)).*rand(sumstat_iter,1); % generate one random number within the given limits.
+% sigma_N (Variance noise floor)
+param_sigma_N(i) = prior(4,1) + (prior(4,2) - prior(4,1)).*rand(sumstat_iter,1); % generate one random number within the given limits.
+
 parfor i = 1:sumstat_iter
-    % STEP 1: Sample parameter from predefined prior distribution (uniform):
-    % T (Reverberation time):
-    param_T(i) = prior(1,1) + (prior(1,2) - prior(1,1)).*rand; % generate one random number
-    % G0 (Reverberation gain)
-    param_G0(i) = prior(2,1) + (prior(2,2) - prior(2,1)).*rand; % generate one random number within the given limits.
-    % lambda ()
-    param_lambda(i) = prior(3,1) + (prior(3,2) - prior(3,1)).*rand; % generate one random number within the given limits.
-    % sigma_N (Variance noise floor)
-    param_sigma_N(i) = prior(4,1) + (prior(4,2) - prior(4,1)).*rand; % generate one random number within the given limits.
-    
     theta_curr = [param_T(i) param_G0(i) param_lambda(i) param_sigma_N(i)];
     
     % STEP 2: Simulate data using Turing model, based on parameters from STEP 1 and create statistics
@@ -102,7 +106,7 @@ params_T(1,:)       = out(2,1:nbr_extract);
 params_G0(1,:)      = out(3,1:nbr_extract);
 params_lambda(1,:)  = out(4,1:nbr_extract);
 params_sigma_N(1,:) = out(5,1:nbr_extract);
-params = [params_T; params_G0; params_lambda; params_sigma_N];
+accepted_params = [params_T; params_G0; params_lambda; params_sigma_N];
 
 % Calculate first weights and covariance
 weights_T = ones(1,nbr_extract)./nbr_extract;
@@ -124,13 +128,11 @@ index_sigma_N = randsample((1:nbr_extract),sumstat_iter,true,weights(4,:));
 
 theta_prop = [params_T(1,index_T); params_G0(1,index_G0); params_lambda(1,index_lambda); params_sigma_N(1,index_sigma_N)];
 
-old_weights = weights;
-
 %% sequential ABC Iterations (PMC)
-for a = 2:iterations
+for a = 21:25%iterations
     out = zeros(5,sumstat_iter);
     d = zeros(sumstat_iter,1);   
-    for i = 1:sumstat_iter
+    parfor i = 1:sumstat_iter
         % Perturb theta 
         theta_curr = mvnrnd(theta_prop(:,i),covariance);
         while(check_params(theta_curr,prior)==2)
@@ -162,37 +164,39 @@ for a = 2:iterations
     params_lambda(a,:)  = out(4,1:nbr_extract);
     params_sigma_N(a,:) = out(5,1:nbr_extract);
 
-    params = [params_T(a,:); params_G0(a,:); params_lambda(a,:); params_sigma_N(a,:)];
-
+    accepted_params = [params_T(a,:); params_G0(a,:); params_lambda(a,:); params_sigma_N(a,:)];
+    
+    % Compute weights for next iteration
+    old_weights = weights; % Save current weights
     for l = 1:size(weights,1)
         for k = 1:size(weights,2)
-            weights(l,k) = 1 /(sum(pdf('normal',params(l,:), params(l,k), sqrt(covariance(l,l)).* old_weights(l,:))));    
+            weights(l,k) = 1 /(sum(pdf('normal',accepted_params(l,:), accepted_params(l,k), sqrt(covariance(l,l)).* old_weights(l,:))));    
         end
     end
-
     weights = weights./sum(weights,2);
-    probs = round(weights * prob_factor); 
+    % Find oovariance for next iteration
     covariance = 2*diag(diag(cov(out(2:5,1:nbr_extract)')));
-
+    % Generate vector with each entry proportional weight for sampling 
+    probs = round(weights*prob_factor); 
+    % Generate population pool for sampling of new parameters
     big_T = [];
     big_G0 = [];
     big_lambda = [];
     big_sigma_N = [];
-
     for j = 1:nbr_extract
-        big_T = [big_T repelem(params(1,j), probs(1,j))];
-        big_G0 = [big_G0 repelem(params(2,j), probs(2,j))];
-        big_lambda = [big_lambda repelem(params(3,j), probs(3,j))];
-        big_sigma_N = [big_sigma_N repelem(params(4,j), probs(4,j))];
+        big_T = [big_T repelem(accepted_params(1,j), probs(1,j))];
+        big_G0 = [big_G0 repelem(accepted_params(2,j), probs(2,j))];
+        big_lambda = [big_lambda repelem(accepted_params(3,j), probs(3,j))];
+        big_sigma_N = [big_sigma_N repelem(accepted_params(4,j), probs(4,j))];
     end
-
+    
+    % Sample new para,eter values from population pool
     theta_prop = [datasample(big_T, sumstat_iter);...
                  datasample(big_G0, sumstat_iter);...
                  datasample(big_lambda, sumstat_iter);...
                  datasample(big_sigma_N, sumstat_iter)];
-    old_weights = weights;
 
-    disp(a);
+    disp(a); % display iteration number
 end
 disp('ABC algorithm finished... ')
 toc

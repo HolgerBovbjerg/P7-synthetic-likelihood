@@ -1,10 +1,10 @@
 thetas = [params_T; params_G0; params_lambda; params_sigma_N];
 
-tt = tiledlayout(3,4,'TileSpacing','Compact','Padding','Compact');
+tt = tiledlayout(5,4,'TileSpacing','Compact','Padding','Compact');
 linesize = 2;
 truecolor = '#32CD32';
 
-for i = 1:3
+for i = 21:25
     [f_T, xi_T] = ksdensity(params_T(i,:));
     [f_G0, xi_G0] = ksdensity(pow2db(params_G0(i,:)));
     [f_lambda, xi_lambda] = ksdensity(params_lambda(i,:));

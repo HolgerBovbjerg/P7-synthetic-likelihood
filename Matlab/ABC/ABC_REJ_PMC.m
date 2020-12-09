@@ -43,11 +43,11 @@ load('Prior_data_large_prior_min_max_values.mat')
 iterations = 15;
 
 % Number of summary statistics sets to generate
-sumstat_iter = 2000;
+sumstat_iter = 1000;
 
 % Extract this amount of parameter entries from each generated summary
 % statistic
-nbr_extract = 50;
+nbr_extract = 100;
 
 % Probability factor for generating population pool
 prob_factor = 1e4;
@@ -129,11 +129,10 @@ index_sigma_N = randsample((1:nbr_extract),sumstat_iter,true,weights(4,:));
 theta_prop = [params_T(1,index_T); params_G0(1,index_G0); params_lambda(1,index_lambda); params_sigma_N(1,index_sigma_N)];
 
 %% sequential ABC Iterations (PMC)
-for a = 2:iterations
+for a = 21:25%iterations
     out = zeros(5,sumstat_iter);
     d = zeros(sumstat_iter,1);   
-    old_weights = weights;
-    for i = 1:sumstat_iter
+    parfor i = 1:sumstat_iter
         % Perturb theta 
         theta_curr = mvnrnd(theta_prop(:,i),covariance);
         while(check_params(theta_curr,prior)==2)

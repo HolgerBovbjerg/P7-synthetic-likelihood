@@ -1,4 +1,7 @@
-%% ABC implementation 2 - ABC REJECTION ALGORITHM:
+%% ABC implementation 2 - ABC-PMC ALGORITHM:
+% As described in:
+% Bharti, A., & Pedersen, T. (2020). Calibration of Stochastic Channel Models using Approximate Bayesian Computation.
+% https://doi.org/10.1109/GCWkshps45667.2019.9024563
 clear
 %% --- Global turin model simulation parameters ---------------------------------------------------
 N  = 300;    % Number of different turin simulations.
@@ -37,16 +40,16 @@ load('Prior_data_large_prior_min_max_values.mat')
 
 %% --- ABC PMC algorithm ---------------------------------------------------------------------
 % Set total iterations
-iterations = 3;
+iterations = 15;
 
 % Number of summary statistics sets to generate
-sumstat_iter = 100;
+sumstat_iter = 2000;
 
 % Extract this amount of parameter entries from each generated summary
 % statistic
-nbr_extract = 10;
+nbr_extract = 50;
 
-% Probability factor
+% Probability factor for generating population pool
 prob_factor = 1e4;
 
 params_T = zeros(iterations,nbr_extract);

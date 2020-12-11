@@ -1,5 +1,5 @@
 function S = create_statistics_extended(Pv, t)
-    S = zeros(1,8);
+    S = zeros(1,18);
     % Calculate temporal moments with numerical integration
     m0 = trapz(t,Pv);         % 0th second order moment (t^0*Pv = Pv)
     m1 = trapz(t,t.^1.*Pv);   % 1st second order moment

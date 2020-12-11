@@ -8,7 +8,7 @@ load('Theta_true_values.mat')
 N = 300; % Number of Turin simulations
 Ns = 801; % Number of sample points per Turin simulation
 B = 4e9; % Bandwidth of signal: 4 GHz
-L = 100;
+L = 10;
 
 [Pv, t] = sim_turin_matrix_gpu(1000, B, Ns, theta_true);
 s_obs = create_statistics_new(Pv, t);
@@ -26,7 +26,7 @@ tic
 for j = 1:steps
 %     lambda = lambdas(j);
     %T = Ts(j);
-    
+    tic
     G0 = G0s(j);
     parfor i = 1:L
 %         theta_prop = [theta_true(1) theta_true(2) lambda theta_true(4)];
@@ -36,6 +36,8 @@ for j = 1:steps
     end
     loglikelihood(j) = (synth_loglikelihood(s_obs,s_sim));
     j
+%     steptime = toc
+    disp(['j = ',num2str(j),' step time = ', num2str(toc)])
 end
 % toc
 % 

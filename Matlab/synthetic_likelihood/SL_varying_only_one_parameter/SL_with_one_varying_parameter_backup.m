@@ -8,7 +8,7 @@ load('Theta_true_values.mat')
 N = 300; % Number of Turin simulations
 Ns = 801; % Number of sample points per Turin simulation
 B = 4e9; % Bandwidth of signal: 4 GHz
-L = 10;
+L = 100;
 
 [Pv, t] = sim_turin_matrix_gpu(1000, B, Ns, theta_true);
 s_obs = create_statistics_new(Pv, t);

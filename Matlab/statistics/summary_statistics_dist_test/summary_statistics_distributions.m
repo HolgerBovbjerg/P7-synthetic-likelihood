@@ -23,23 +23,29 @@ tic
 S = create_statistics(Nr, T, G0, lambda, sigma_N, B, Ns);
 toc
 %%
-bins = 15;
+Nr = length(s_sim);
+bins = 40;
 figure(1)
-plotstatistics =  tiledlayout(1,4);
+plotstatistics =  tiledlayout(3,3);
 title(plotstatistics,"Histograms of summary statistics, from "+ Nr +" summary statistic vectors") 
 
-nexttile
-hist(S(:,1),bins)
-title("Histogram of mean of 0th temporal moment")
+for p = 1:9
+   nexttile
+   hist(S(:,p),bins)
+end
 
-nexttile
-hist(S(:,2),bins)
-title("Histogram of mean of 1st temporal moment")
-
-nexttile
-hist(S(:,3),bins)
-title("Histogram of mean of 2nd temporal moment")
-
-nexttile
-hist(S(:,4),bins)
-title("Histogram of mean of 3rd temporal moment")
+% nexttile
+% hist(S(:,1),bins)
+% title("Histogram of mean of 0th temporal moment")
+% 
+% nexttile
+% hist(S(:,2),bins)
+% title("Histogram of mean of 1st temporal moment")
+% 
+% nexttile
+% hist(S(:,3),bins)
+% title("Histogram of mean of 2nd temporal moment")
+% 
+% nexttile
+% hist(S(:,4),bins)
+% title("Histogram of mean of 3rd temporal moment")

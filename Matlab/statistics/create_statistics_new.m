@@ -1,4 +1,4 @@
-function S = create_statistics_new(Pv, t)
+function [S,flag] = create_statistics_new(Pv, t)
 %     Pv = pow2db(Pv);
     % Calculate temporal moments with numerical integration
     m0 = trapz(t,Pv)';         % 0th second order moment (t^0*Pv = Pv)
@@ -9,7 +9,7 @@ function S = create_statistics_new(Pv, t)
 %     m2kurt = trapz(t,t.^2.*(Pv.^2))';         % 2nd fourth order moment 
 
     D2 = [m0 m1 m2];
-    D4 = [m0kurt m1kurt m2kurt];
+    %D4 = [m0kurt m1kurt m2kurt];
     meanD2 = mean(D2);
 %     meanD4 = mean(D4);
     CovD2 = cov(D2);
@@ -21,5 +21,9 @@ function S = create_statistics_new(Pv, t)
 %   S = [meanD4(1) meanD4(2) meanD4(3)...
 %         CovD4(1,1) CovD4(2,2) CovD4(3,3)...
 %         CovD4(1,2) CovD4(1,3) CovD4(2,3)];
-    S = log(S);
+if any(S<0)
+    flag = 0;
+else
+S = log(S);
+flag = 1;
 end

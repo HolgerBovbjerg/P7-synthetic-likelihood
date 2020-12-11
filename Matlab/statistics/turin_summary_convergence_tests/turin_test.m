@@ -10,14 +10,36 @@ B = 4e9; % Bandwidth of signal: 4 GHz
 sims = 2000;
 
 PV_temp = zeros(801,sims);
-s_obs = zeros(4,sims);
+s_obs = zeros(9,sims);
 
-for i = 1:sims
+    [Pv, t] = sim_turin_matrix_gpu(1, B, Ns, turin_thetas_1);
+    PV_temp(:,1) = Pv;
+for i = 2:sims
     i
     [Pv, t] = sim_turin_matrix_gpu(1, B, Ns, turin_thetas_1);
     PV_temp(:,i) = Pv;
     s_obs(:,i) = create_statistics(PV_temp(:,1:i), t);
 end
+%%
+
+
+
+tiledlayout(3,1)
+
+nexttile
+plot(s_obs(1,2:end-9))
+   title('mean(m0)')
+   set(gca,'ytick',[])
+nexttile
+plot(s_obs(4,2:end-9))
+   title('Var(m1)')
+   set(gca,'ytick',[])
+nexttile
+plot(s_obs(7,2:end-9))
+   title('Cov(m0,m1)')
+   set(gca,'ytick',[])
+
+
 %%
 load("test_using_turin_thetas_1.mat")
 data1 = s_obs;

@@ -26,7 +26,7 @@ tic
 for j = 1:steps
 %     lambda = lambdas(j);
     %T = Ts(j);
-    
+    tic
     G0 = G0s(j);
     parfor i = 1:L
 %         theta_prop = [theta_true(1) theta_true(2) lambda theta_true(4)];
@@ -36,6 +36,8 @@ for j = 1:steps
     end
     loglikelihood(j) = (synth_loglikelihood(s_obs,s_sim));
     j
+%     steptime = toc
+    disp(['j = ',num2str(j),' step time = ', num2str(toc)])
 end
 % toc
 % 

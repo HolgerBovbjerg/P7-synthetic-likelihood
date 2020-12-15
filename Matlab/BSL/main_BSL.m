@@ -14,7 +14,7 @@ load('covariance_small_prior.mat')
 
 %% "Observed data for testing"
 %load('S_obs_9_stats.mat')
-load('observed_data_statistics.mat')
+load('observed_data_statistics_antenna2_2.mat')
 %%
 k = 2500;    % Number of MCMC steps
 L = 500;     % Numberof statistics vectors used per likelihood.

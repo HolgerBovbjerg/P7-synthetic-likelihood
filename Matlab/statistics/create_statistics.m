@@ -11,5 +11,10 @@ function S = create_statistics(Pv, t)
     S = [meanD2(1) meanD2(2) meanD2(3)...
         CovD2(1,1) CovD2(2,2) CovD2(3,3)...
         CovD2(1,2) CovD2(1,3) CovD2(2,3)];
+    for i = 1:length(S)
+        if S(i) < 0
+            S(i) = 0;
+        end
+    end
     S = log(S);
 end

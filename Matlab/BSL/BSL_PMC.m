@@ -1,17 +1,26 @@
-%% ABC-PMC ALGORITHM:
-% As described in:
+%% BSL-PMC ALGORITHM:
+% Inspired by the ABC-PMC method described in:
 % Bharti, A., & Pedersen, T. (2020). Calibration of Stochastic Channel Models using Approximate Bayesian Computation.
 % https://doi.org/10.1109/GCWkshps45667.2019.9024563
-% (without regression)
+
 clear
+%% --- Initial max/min conditions for parameters (prior distribution) -----------------------------
+load('Prior_data_large_prior_min_max_values.mat')
+load('Theta_true_values.mat')
+
 %% --- Global turin model simulation parameters ---------------------------------------------------
-N  = 300;    % Number of different turin simulations.
+N  = 50;    % Number of different turin simulations.
 Ns = 801;   % Number of time entries for each turin simulation.
-Bw = 4e9;   % Bandwidth (4Ghz).
+B = 4e9;   % Bandwidth (4Ghz).
+
+%% Find first proposed Theta and covariance for proposal distribution
+[~, theta_curr] = find_cov_prior(prior);
+theta_curr(3) = 1.76e8;
+theta_start = theta_curr;
+load('covariance_small_prior.mat')
 
 %% --- Generate "observed data" -----------------------------------------------------
-
-load("Theta_true_values.mat")
+% load("Theta_true_values.mat")
 % If Theta_true_values.mat not generated - uncoment and run the following block:
 
 % T       = 7.8e-9;
@@ -24,41 +33,38 @@ load("Theta_true_values.mat")
 
 % Theta_true_values = [T G0 lambda sigma_N];
 
-% 
-% [Pv, t] = sim_turin_matrix_gpu(N, Bw, Ns, theta_true);
-% S_obs(i,:) = create_statistics(Pv, t);
+% S_obs = zeros(2000,9);
+%
+% parfor i = 1:2000
+%     [Pv, t] = sim_turin_matrix_gpu(N, Bw, Ns, theta_true);
+%     S_obs(i,:) = create_statistics(Pv, t);
+% end
 
-
-load('S_obs.mat')
-%%
-mu_S_obs = mean(S_obs);     % Mean of the summary statistics
-Sigma_S_obs = cov(S_obs);     % Covariance of summary statistics
-
-%% --- Initial max/min conditions for parameters (prior distribution) -----------------------------
-load('Prior_data_large_prior_min_max_values.mat')
+load('S_obs_9_stats.mat')
 
 %% --- BSL PMC algorithm ---------------------------------------------------------------------
-for i = 1:L
-    [Pv, t] = sim_turin_matrix_gpu(N, B, Ns, theta_curr);
-    s_sim(i,:) = create_statistics(Pv, t);
-end
+% Set total iterations
+iterations = 15;
 
-loglikelihood = synth_loglikelihood(s_obs,s_sim);
+% Number of summary statistics sets to generate
+sumstat_iter = 1000;
+
+% Extract this amount of parameter entries from each generated summary
+% statistic
+nbr_extract = 100;
 
 % Probability factor for generating population pool
 prob_factor = 1e4;
 
-params_T = zeros(iterations,nbr_extract);
-params_G0 = zeros(iterations,nbr_extract);
-params_lambda = zeros(iterations,nbr_extract);
-params_sigma_N = zeros(iterations,nbr_extract);
+% Numberof statistics vectors used per likelihood.
+L = 10;     
 
 disp('BSL algorithm computing, please wait... ')
 tic
 
 %% Iteration 1 - rejection step on uniform prior
 out = zeros(5,sumstat_iter);
-d = zeros(sumstat_iter,1);
+loglikelihood = zeros(sumstat_iter,1);
 
 % STEP 1: Sample parameter from predefined prior distribution (uniform):
 % T (Reverberation time):
@@ -70,24 +76,22 @@ param_lambda = prior(3,1) + (prior(3,2) - prior(3,1)).*rand(sumstat_iter,1); % g
 % sigma_N (Variance noise floor)
 param_sigma_N = prior(4,1) + (prior(4,2) - prior(4,1)).*rand(sumstat_iter,1); % generate one random number within the given limits.
 
-parfor i = 1:sumstat_iter
+for i = 1:sumstat_iter
     theta_curr = [param_T(i) param_G0(i) param_lambda(i) param_sigma_N(i)];
     
     % STEP 2: Simulate data using Turing model, based on parameters from STEP 1 and create statistics
-    [Pv, t] = sim_turin_matrix_gpu(N, Bw, Ns, theta_curr);
-    S_simulated = create_statistics(Pv, t);
-    % STEP 3: calculate the difference between observed and simulated summary statistics
-    % Mahalanobis distance see formular in document.
-    d(i) = (S_simulated - mu_S_obs)/Sigma_S_obs * (S_simulated - mu_S_obs)';
-    
-    % Row 1 of the out vector contains the distance
-    % the rest of the rows contains the corresponding parameters
-    % used for generating that specific distance.
-    out(:,i) =  [d(i);...
-                theta_curr'];
+    s_sim = zeros(L,9);
+    parfor j = 1:L
+        [Pv, t] = sim_turin_matrix_gpu(N, B, Ns, theta_curr);
+        s_sim(j,:) = create_statistics(Pv, t);
+    end
+    % STEP 3: calculate the likelihood
+    loglikelihood(i) = synth_loglikelihood(s_obs,s_sim);
+    out(:,i) =  [loglikelihood(i);...
+        theta_curr'];
     disp(i);
 end
-% Sort the "out" matrix so that the lowest euclidean distance is at the
+% Sort the "out" matrix so that the highest likelihood is at the
 % (1,1) matrix position and highest distance is at (max,1)
 out = sortrows(out',1)';
 %
@@ -119,29 +123,23 @@ index_sigma_N = randsample((1:nbr_extract),sumstat_iter,true,weights(4,:));
 
 theta_prop = [params_T(1,index_T); params_G0(1,index_G0); params_lambda(1,index_lambda); params_sigma_N(1,index_sigma_N)];
 
-%% sequential BSL Iterations (PMC)
-for a = 21:25%iterations
+%% sequential ABC Iterations (PMC)
+for a = 1:3%iterations
     out = zeros(5,sumstat_iter);
-    d = zeros(sumstat_iter,1);   
-    parfor i = 1:sumstat_iter
-        % Perturb theta 
-        theta_curr = mvnrnd(theta_prop(:,i),covariance);
-        while(check_params(theta_curr,prior)==2)
-            theta_curr = mvnrnd(theta_prop(:,i),covariance);
-        end
-        theta_curr(3) = round(theta_curr(3));
-        %% STEP 2: Simulate data using Turing model, based on parameters from STEP 1 and create statistics
-        [Pv, t] = sim_turin_matrix_gpu(N, Bw, Ns, theta_curr);
-        S_simulated = create_statistics(Pv, t);
-        %% STEP 3: calculate the difference between observed and simulated summary statistics
-        % Mahalanobis distance
-        d(i) = (S_simulated - mu_S_obs)/Sigma_S_obs * (S_simulated - mu_S_obs)';
+    d = zeros(sumstat_iter,1);
+    for i = 1:sumstat_iter
+        theta_curr = [param_T(i) param_G0(i) param_lambda(i) param_sigma_N(i)];
         
-        % Row 1 of the out vector contains the distance
-        % the rest of the rows contains the corresponding parameters
-        % used for generating that specific distance.
-        out(:,i) =  [d(i);...
-                    theta_curr'];
+        % STEP 2: Simulate data using Turing model, based on parameters from STEP 1 and create statistics
+        s_sim = zeros(L,9);
+        parfor j = 1:L
+            [Pv, t] = sim_turin_matrix_gpu(N, B, Ns, theta_curr);
+            s_sim(j,:) = create_statistics(Pv, t);
+        end
+        % STEP 3: calculate the likelihood
+        loglikelihood(i) = synth_loglikelihood(s_obs,s_sim);
+        out(:,i) =  [loglikelihood(i);...
+            theta_curr'];
         disp(i);
     end
     % Sort the "out" matrix so that the lowest distance is at the
@@ -154,21 +152,21 @@ for a = 21:25%iterations
     params_G0(a,:)      = out(3,1:nbr_extract);
     params_lambda(a,:)  = out(4,1:nbr_extract);
     params_sigma_N(a,:) = out(5,1:nbr_extract);
-
+    
     accepted_params = [params_T(a,:); params_G0(a,:); params_lambda(a,:); params_sigma_N(a,:)];
     
     % Compute weights for next iteration
     old_weights = weights; % Save current weights
     for l = 1:size(weights,1)
         for k = 1:size(weights,2)
-            weights(l,k) = 1 /(sum(pdf('normal',accepted_params(l,:), accepted_params(l,k), sqrt(covariance(l,l)).* old_weights(l,:))));    
+            weights(l,k) = 1 /(sum(pdf('normal',accepted_params(l,:), accepted_params(l,k), sqrt(covariance(l,l)).* old_weights(l,:))));
         end
     end
     weights = weights./sum(weights,2);
     % Find oovariance for next iteration
     covariance = 2*diag(diag(cov(out(2:5,1:nbr_extract)')));
-    % Generate vector with each entry proportional weight for sampling 
-    probs = round(weights*prob_factor); 
+    % Generate vector with each entry proportional weight for sampling
+    probs = round(weights*prob_factor);
     % Generate population pool for sampling of new parameters
     big_T = [];
     big_G0 = [];
@@ -183,11 +181,11 @@ for a = 21:25%iterations
     
     % Sample new para,eter values from population pool
     theta_prop = [datasample(big_T, sumstat_iter);...
-                 datasample(big_G0, sumstat_iter);...
-                 datasample(big_lambda, sumstat_iter);...
-                 datasample(big_sigma_N, sumstat_iter)];
-
+        datasample(big_G0, sumstat_iter);...
+        datasample(big_lambda, sumstat_iter);...
+        datasample(big_sigma_N, sumstat_iter)];
+    
     disp(a); % display iteration number
 end
-disp('BSL algorithm finished... ')
+disp('ABC algorithm finished... ')
 toc

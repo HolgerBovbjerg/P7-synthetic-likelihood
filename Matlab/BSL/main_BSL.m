@@ -17,7 +17,7 @@ load('covariance_small_prior.mat')
 load('observed_data_statistics_antenna2_2.mat')
 %%
 k = 2500;    % Number of MCMC steps
-L = 500;     % Numberof statistics vectors used per likelihood.
+L = 300;     % Numberof statistics vectors used per likelihood.
 
 accept = 0;
 s_sim = zeros(L,9);

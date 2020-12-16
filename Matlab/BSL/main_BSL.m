@@ -13,8 +13,8 @@ theta_start = theta_curr;
 load('covariance_small_prior.mat')
 
 %% "Observed data for testing"
-load('S_obs_9_stats.mat')
-% load('observed_data_statistics.mat')
+%load('S_obs_9_stats.mat')
+load('observed_data_statistics_antenna2_2.mat')
 %%
 k = 2500;    % Number of MCMC steps
 L = 300;     % Numberof statistics vectors used per likelihood.

@@ -189,5 +189,5 @@ for a = 21:25%iterations
 
     disp(a); % display iteration number
 end
-disp('BSL algorithm finished... ')
+disp('ABC algorithm finished... ')
 toc

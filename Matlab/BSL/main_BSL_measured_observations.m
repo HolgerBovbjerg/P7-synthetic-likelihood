@@ -11,7 +11,6 @@ B = 4e9; % Bandwidth of signal: 4 GHz
 covariance = covariance/17; 
 theta_start = theta_curr;
 %% "Observed data for testing"
-
 load('s_obs_measured_observations_vertical_vertical.mat')
 %%
 k = 2500;    % Number of MCMC steps

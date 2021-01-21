@@ -1,35 +1,32 @@
 %%
 clear all
-load('Prior_data_large_prior_min_max_values.mat')
-load('Theta_true_values.mat')
+load('prior_measured_observations_vertical_vertical.mat')
+load('Peter_guess_true_values.mat')
 
 N = 300; % Number of Turin simulations
 Ns = 801; % Number of sample points per Turin simulation
 B = 4e9; % Bandwidth of signal: 4 GHz
 %% Find first proposed Theta and covariance for proposal distribution
-[~, theta_curr] = find_cov_prior(prior);
+[covariance, theta_curr] = find_cov_prior(prior);
+covariance = covariance/17; 
 theta_start = theta_curr;
-load('covariance_small_prior.mat')
-covariance = covariance/17;
-
 %% "Observed data for testing"
-% load('S_obs_9_stats.mat')
-[~, theta_true] = find_cov_prior(prior);
-[Pv, t] = sim_turin_matrix_gpu_w_delay(2000, B, Ns, theta_true, 1e-8);
-s_obs = create_statistics(Pv, t);
+load('s_obs_measured_observations_vertical_vertical.mat')
 %%
-k = 3500;    % Number of MCMC steps
-L = 500;     % Number of statistics vectors used per likelihood.
+k = 2500;    % Number of MCMC steps
+L = 500;     % Numberof statistics vectors used per likelihood.
 
 accept = 0;
 s_sim = zeros(L,9);
 thetas = zeros(4,k);
 thetas(:,1) = theta_curr';
 
+tic
 for i = 1:L
     [Pv, t] = sim_turin_matrix_gpu_w_delay(N, B, Ns, theta_curr, 1e-8);
     s_sim(i,:) = create_statistics(Pv, t);
 end
+toc
 
 loglikelihood = synth_loglikelihood(s_obs,s_sim);
 

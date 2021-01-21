@@ -1,0 +1,45 @@
+
+    Deltat = 1/diff([58 62]*1e9);
+    Taxis = (0:801-1)*Deltat;
+   % load ('Users\torkaufmanngjerde\Downloads\HfullNLOS5.mat');
+    for ii = 1:50
+        for jj = 1:50
+             x(ii,jj,:) =ifft(squeeze(HfullNLOS5(ii,jj,:)));
+        end
+    end
+ 
+    for ii=1:2
+        for jj = 1:2
+            if ii ==1 && jj ==1 
+                h_vv = reshape(x(2*(ii-1)+1:2:end,2*(jj-1)+1:2:end,:),625,801);
+            elseif ii == 1
+                 h_vh = reshape(x(2*(ii-1)+1:2:end,2*(jj-1):2:end,:),625,801);
+            elseif jj == 1
+                 h_hv = reshape(x(2*(ii-1):2:end,2*(jj-1)+1:2:end,:),625,801);
+            else
+                 h_hh = reshape(x(2*(ii-1):2:end,2*(jj-1):2:end,:),625,801);
+            end
+        end
+    end
+    
+    data = h_vv; % Select and pass on the polarization used
+    data = abs(ifft(data,[],1)).^2;     % Get to time domain by inverse Fourier transform
+   
+    Bw = 4e9;
+    Ns = 801;
+    deltaf = Bw/(Ns-1); % Frequency separation
+    
+    % Error using trapz (line 66)
+    % Point spacing must be a scalar specifying uniform 
+    % spacing or a vector of x-coordinates for each data point.
+    
+    % Q = trapz(X,Y) integrates Y with respect to the coordinates 
+    % or scalar spacing specified by X.
+     
+    
+    t = (0:Ns-1)./(deltaf * Ns); % Generate timestamps vector (seconds)
+    p = deltaf; % Based on error (line 66) t is set to uniform spacing scalar
+    
+    s_obs = create_statistics(data, t) % Create statistic vector
+    
+    % m0 = trapz(t,data');

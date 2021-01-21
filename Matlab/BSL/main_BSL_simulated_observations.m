@@ -1,7 +1,6 @@
 %%
 clear all
-load('Prior_data_large_prior_min_max_values.mat')
-load('Theta_true_values.mat')
+load('Prior_simulated_observations_min_max_values.mat')
 
 N = 300; % Number of Turin simulations
 Ns = 801; % Number of sample points per Turin simulation
@@ -15,6 +14,7 @@ covariance = covariance/17;
 %% "Observed data for testing"
 % load('S_obs_9_stats.mat')
 [~, theta_true] = find_cov_prior(prior);
+theta_true(3) = 20e7;
 [Pv, t] = sim_turin_matrix_gpu_w_delay(2000, B, Ns, theta_true, 1e-8);
 s_obs = create_statistics(Pv, t);
 %%
@@ -26,10 +26,12 @@ s_sim = zeros(L,9);
 thetas = zeros(4,k);
 thetas(:,1) = theta_curr';
 
+tic
 for i = 1:L
     [Pv, t] = sim_turin_matrix_gpu_w_delay(N, B, Ns, theta_curr, 1e-8);
     s_sim(i,:) = create_statistics(Pv, t);
 end
+toc
 
 loglikelihood = synth_loglikelihood(s_obs,s_sim);
 

@@ -109,7 +109,7 @@ var_T = var(params_T(1,:));
 var_G0 = var(params_G0(1,:));
 var_lambda = var(params_lambda(1,:));
 var_sigma_N = var(params_sigma_N(1,:));
-covariance = diag([var_T var_G0 var_lambda var_sigma_N]);
+covariance = 2*diag([var_T var_G0 var_lambda var_sigma_N]);
 
 % Choose theta from accepted parameters of last iteration with propbability based on wieghts
 index_T = randsample((1:nbr_extract),sumstat_iter,true,weights(1,:));
@@ -120,7 +120,7 @@ index_sigma_N = randsample((1:nbr_extract),sumstat_iter,true,weights(4,:));
 theta_prop = [params_T(1,index_T); params_G0(1,index_G0); params_lambda(1,index_lambda); params_sigma_N(1,index_sigma_N)];
 
 %% sequential BSL Iterations (PMC)
-for a = 21:25%iterations
+for a = 1:20%iterations
     out = zeros(5,sumstat_iter);
     d = zeros(sumstat_iter,1);   
     parfor i = 1:sumstat_iter

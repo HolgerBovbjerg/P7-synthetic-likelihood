@@ -14,7 +14,6 @@ covariance = covariance/17;
 %% "Observed data for testing"
 % load('S_obs_9_stats.mat')
 [~, theta_true] = find_cov_prior(prior);
-theta_true(3) = 20e7;
 [Pv, t] = sim_turin_matrix_gpu_w_delay(2000, B, Ns, theta_true, 1e-8);
 s_obs = create_statistics(Pv, t);
 %%

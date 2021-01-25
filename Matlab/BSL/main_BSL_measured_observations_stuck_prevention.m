@@ -1,14 +1,12 @@
-%%
+%%a
 clear all
 load('prior_measured_observations_vertical_vertical.mat')
-load('Peter_guess_true_values.mat')
 
 N = 300; % Number of Turin simulations
 Ns = 801; % Number of sample points per Turin simulation
 B = 4e9; % Bandwidth of signal: 4 GHz
 %% Find first proposed Theta and covariance for proposal distribution
 [covariance, theta_curr] = find_cov_prior(prior);
-theta_curr(3) = 20e7;
 covariance = covariance/17; 
 theta_start = theta_curr;
 %% "Observed data for testing"

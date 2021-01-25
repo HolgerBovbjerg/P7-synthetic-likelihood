@@ -1,19 +1,23 @@
 %%
 clear all
 load('prior_measured_observations_vertical_vertical.mat')
-load('Peter_guess_true_values.mat')
+
+%% Load a set of some "true" values. Only needed because of the real-time-plot function!!
+load('Theta_true_values.mat')
+%%
 
 N = 300; % Number of Turin simulations
 Ns = 801; % Number of sample points per Turin simulation
 B = 4e9; % Bandwidth of signal: 4 GHz
 %% Find first proposed Theta and covariance for proposal distribution
 [covariance, theta_curr] = find_cov_prior(prior);
+load('covariance_small_prior.mat')
 covariance = covariance/17; 
 theta_start = theta_curr;
 %% "Observed data for testing"
 load('s_obs_measured_observations_vertical_vertical.mat')
 %%
-k = 2500;    % Number of MCMC steps
+k = 3500;    % Number of MCMC steps
 L = 500;     % Numberof statistics vectors used per likelihood.
 
 accept = 0;

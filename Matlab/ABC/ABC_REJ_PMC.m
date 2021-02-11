@@ -8,7 +8,7 @@ clear
 N  = 300;    % Number of different turin simulations.
 Ns = 801;   % Number of time entries for each turin simulation.
 Bw = 4e9;   % Bandwidth (4Ghz).
-
+delay = 6e-9;
 %% --- Generate "observed data" -----------------------------------------------------
 
 load("Theta_true_values.mat")
@@ -28,8 +28,10 @@ load("Theta_true_values.mat")
 % [Pv, t] = sim_turin_matrix_gpu(N, Bw, Ns, theta_true);
 % S_obs(i,:) = create_statistics(Pv, t);
 
-
-load('S_obs.mat')
+% Simulated data
+% load('S_obs.mat')
+% Real measurd data
+load('S_obs_meas_data.mat')
 %%
 mu_S_obs = mean(S_obs);     % Mean of the summary statistics
 Sigma_S_obs = cov(S_obs);     % Covariance of summary statistics
@@ -37,25 +39,26 @@ Sigma_S_obs = cov(S_obs);     % Covariance of summary statistics
 %% --- Initial max/min conditions for parameters (prior distribution) -----------------------------
 load('Prior_data_large_prior_min_max_values.mat')
 
-%% --- BSL PMC algorithm ---------------------------------------------------------------------
-for i = 1:L
-    [Pv, t] = sim_turin_matrix_gpu(N, B, Ns, theta_curr);
-    s_sim(i,:) = create_statistics(Pv, t);
-end
-
-loglikelihood = synth_loglikelihood(s_obs,s_sim);
-
+%% --- ABC PMC algorithm ---------------------------------------------------------------------
+% Number of summary statistics sets to generate
+sumstat_iter = 2000;
+% Extract this amount of parameter sets closest to observed data
+nbr_extract = 100;
+% Acceptance rate
+Eps_percent = (nbr_extract/sumstat_iter)*100;
 % Probability factor for generating population pool
 prob_factor = 1e4;
+% Number of ABC num_iter
+num_iter = 10;
 
-params_T = zeros(iterations,nbr_extract);
-params_G0 = zeros(iterations,nbr_extract);
-params_lambda = zeros(iterations,nbr_extract);
-params_sigma_N = zeros(iterations,nbr_extract);
+params_T = zeros(num_iter,nbr_extract);
+params_G0 = zeros(num_iter,nbr_extract);
+params_lambda = zeros(num_iter,nbr_extract);
+params_sigma_N = zeros(num_iter,nbr_extract);
 
-disp('BSL algorithm computing, please wait... ')
+disp('PMC-ABC algorithm computing, please wait... ')
+
 tic
-
 %% Iteration 1 - rejection step on uniform prior
 out = zeros(5,sumstat_iter);
 d = zeros(sumstat_iter,1);
@@ -74,7 +77,7 @@ parfor i = 1:sumstat_iter
     theta_curr = [param_T(i) param_G0(i) param_lambda(i) param_sigma_N(i)];
     
     % STEP 2: Simulate data using Turing model, based on parameters from STEP 1 and create statistics
-    [Pv, t] = sim_turin_matrix_gpu(N, Bw, Ns, theta_curr);
+    [Pv, t] = sim_turin_matrix_gpu_w_delay(N, Bw, Ns, theta_curr, delay);
     S_simulated = create_statistics(Pv, t);
     % STEP 3: calculate the difference between observed and simulated summary statistics
     % Mahalanobis distance see formular in document.
@@ -87,6 +90,7 @@ parfor i = 1:sumstat_iter
                 theta_curr'];
     disp(i);
 end
+toc
 % Sort the "out" matrix so that the lowest euclidean distance is at the
 % (1,1) matrix position and highest distance is at (max,1)
 out = sortrows(out',1)';
@@ -119,19 +123,20 @@ index_sigma_N = randsample((1:nbr_extract),sumstat_iter,true,weights(4,:));
 
 theta_prop = [params_T(1,index_T); params_G0(1,index_G0); params_lambda(1,index_lambda); params_sigma_N(1,index_sigma_N)];
 
-%% sequential BSL Iterations (PMC)
-for a = 1:20%iterations
+%% sequential ABC Iterations (PMC)
+for a = 2:num_iter %iterations
+    tic
     out = zeros(5,sumstat_iter);
     d = zeros(sumstat_iter,1);   
-    parfor i = 1:sumstat_iter
+    for i = 1:sumstat_iter
         % Perturb theta 
         theta_curr = mvnrnd(theta_prop(:,i),covariance);
         while(check_params(theta_curr,prior)==2)
             theta_curr = mvnrnd(theta_prop(:,i),covariance);
         end
         theta_curr(3) = round(theta_curr(3));
-        %% STEP 2: Simulate data using Turing model, based on parameters from STEP 1 and create statistics
-        [Pv, t] = sim_turin_matrix_gpu(N, Bw, Ns, theta_curr);
+        %% STEP 2: Simulate data using Turin model, based on parameters from STEP 1 and create statistics
+        [Pv, t] = sim_turin_matrix_gpu_w_delay(N, Bw, Ns, theta_curr, delay);
         S_simulated = create_statistics(Pv, t);
         %% STEP 3: calculate the difference between observed and simulated summary statistics
         % Mahalanobis distance
@@ -173,7 +178,7 @@ for a = 1:20%iterations
     big_T = [];
     big_G0 = [];
     big_lambda = [];
-    big_sigma_N = [];
+    big_sigma_N = []; 
     for j = 1:nbr_extract
         big_T = [big_T repelem(accepted_params(1,j), probs(1,j))];
         big_G0 = [big_G0 repelem(accepted_params(2,j), probs(2,j))];
@@ -188,6 +193,6 @@ for a = 1:20%iterations
                  datasample(big_sigma_N, sumstat_iter)];
 
     disp(a); % display iteration number
+    toc
 end
 disp('ABC algorithm finished... ')
-toc

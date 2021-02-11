@@ -22,6 +22,8 @@ for ii=1:2
         end
     end
 end
+
+%% To PDP
 Py_measured = abs(h_vv).^2;
 Py_measured_ave = mean(Py_measured);
 
@@ -39,7 +41,10 @@ t = (0:Ns-1)'./(deltaf*Ns);
 
 s_obs_measured = create_statistics(Py_measured',t);
 s_obs_simulated = create_statistics(Py_sim,t);
-
+s_obs_abc = zeros(25,9);
+for i = 1:(625/25)
+    s_obs_abc(i,:) = create_statistics(Py_measured(1+(i-1)*25:(i-1)*25+25,:)',t);
+end
 %% plot data
 
 
